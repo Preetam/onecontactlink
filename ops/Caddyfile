@@ -1,0 +1,14 @@
+api.onecontact.internal:80 {
+	proxy / localhost:4001
+	tls off
+}
+
+api.onecontact.link {
+	proxy /v1 localhost:4002
+	header / -Server
+}
+
+onecontact.link, www.onecontact.link {
+	proxy / localhost:4003
+	header / -Server
+}
