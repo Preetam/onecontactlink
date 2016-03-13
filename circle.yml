@@ -1,0 +1,23 @@
+machine:
+  environment:
+    GOPATH: /home/ubuntu/.go_workspace
+
+dependencies:
+  pre:
+    - mkdir -p ~/.go_workspace/src/github.com/Preetam
+    - rm -rf ~/.go_workspace/src/github.com/Preetam/onecontactlink
+    - mv ~/onecontactlink ~/.go_workspace/src/github.com/Preetam/
+    - ln -s ~/.go_workspace/src/github.com/Preetam/onecontactlink ~/onecontactlink
+  override:
+    - go get ./...
+
+database:
+  override:
+    - mysql -e "DROP DATABASE IF EXISTS mail_test; CREATE DATABASE mail_test; GRANT ALL ON mail_test.* TO 'testuser'@'localhost' IDENTIFIED BY '';"
+    - mysql -utestuser -A mail_test < schema/test-setup.sql
+
+
+test:
+  override:
+    - go test -race ./...
+    - go build ./...
