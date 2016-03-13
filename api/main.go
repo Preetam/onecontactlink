@@ -11,11 +11,17 @@ import (
 	"net/http"
 )
 
+var (
+	InternalAPIEndpoint = "http://localhost:4001/v1"
+)
+
 func main() {
 	addr := flag.String("addr", ":4002", "Listen address")
+	flag.StringVar(&InternalAPIEndpoint, "internal-api", InternalAPIEndpoint,
+		"Base URI to the internal API")
 	flag.Parse()
 
-	internalClient := client.New("http://localhost:4001/v1")
+	internalClient := client.New(InternalAPIEndpoint)
 
 	service := siesta.NewService("/v1")
 	service.AddPre(middleware.RequestIdentifier)
