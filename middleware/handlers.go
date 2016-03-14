@@ -32,7 +32,7 @@ func ResponseGenerator(c siesta.Context, w http.ResponseWriter, r *http.Request)
 		response.Error = err.(string)
 	}
 
-	if response.Data != nil && response.Error != "" {
+	if response.Data != nil || response.Error != "" {
 		c.Set(ResponseKey, response)
 	}
 }
