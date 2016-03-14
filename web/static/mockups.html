@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>OneContact.Link</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,700' rel='stylesheet' type='text/css'>
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/skeleton.css">
+  <style>
+  body {
+    font-family: "Source Sans Pro", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  .container {
+    max-width: 760px;
+  }
+
+  .brand {
+    font-size: 3rem;
+    font-weight: bold;
+  }
+
+  .brand a {
+    color: black;
+    text-decoration: none;
+  }
+
+  .navbar {
+    list-style: none;
+  }
+
+  .navbar-item {
+    position: relative;
+    float: left;
+    line-height: 3em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .navbar-item a {
+    margin-right: 4rem;
+    text-decoration: none;
+    color: black;
+  }
+
+  .warning {
+    min-height: 3rem;
+    min-width: 3rem;
+    background-color: #FFEEBA;
+    border: 1px solid #EDD691;
+    border-radius: 4px;
+    padding: 0 40px;
+    line-height: 40px;
+    text-align: center;
+  }
+
+  @media (min-width: 550px) {
+    .navbar {
+      float: right;
+    }
+  }
+  </style>
+</head>
+<body>
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<div class="container">
+  <div class="row" style="margin-top: 10%">
+    <div class="one-half column">
+    <h1 class='brand'><a href='#'>OneContact.Link</a></h1>
+    </div>
+    <div class="one-half column">
+      <ul class='navbar'>
+        <li class='navbar-item'><a href='#'>Home</a></li>
+        <li class='navbar-item'><a href='#'>Manage</a></li>
+        <li class='navbar-item'><a href='#'>Help</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="row" style="margin: 6rem 0">
+    <div class="twelve columns">
+      <h4 style="text-align: center; font-weight: normal; font-size: 4rem;">Multiple Email Addresses, One Link.</h4>
+      <p style="text-align: center; font-size: 2rem;">Changing companies or moving to a new email address?<br/>We'll let your contacts know how to reach you.</p>
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="row">
+    <div class="twelve columns">
+      <h2>Sign up</h2>
+      <form>
+        <div class="row">
+          <div class="six columns">
+            <label for="nameInput">Your name</label>
+            <input class="u-full-width" type="text" placeholder="Richard Hendricks">
+          </div>
+          <div class="six columns">
+            <label for="exampleEmailInput">Your email</label>
+            <input class="u-full-width" type="email" placeholder="test@mailbox.com" id="exampleEmailInput">
+          </div>
+        </div>
+        <div class="g-recaptcha" data-sitekey="6Le3rhoTAAAAAK6pdo1YQSXzhnv7TlLjqtcTOlHU"></div>
+        <input class="button-primary" type="submit" value="Submit" style="margin-top: 1rem;">
+      </form>
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="row">
+    <div class="twelve columns">
+      <h2>Request Info</h2>
+      <p>Request [Person]'s contact information.</p>
+      <form>
+        <div class="row">
+          <div class="six columns">
+            <label for="nameInput">Your name</label>
+            <input class="u-full-width" type="text" placeholder="Richard Hendricks">
+          </div>
+          <div class="six columns">
+            <label for="exampleEmailInput">Your email</label>
+            <input class="u-full-width" type="email" placeholder="test@mailbox.com" id="exampleEmailInput">
+          </div>
+        </div>
+        <div class="g-recaptcha" data-sitekey="6Le3rhoTAAAAAK6pdo1YQSXzhnv7TlLjqtcTOlHU"></div>
+        <p>We'll let you know once [Person] has either accepted or rejected your request.</p>
+        <input class="button-primary" type="submit" value="Submit">
+      </form>
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="row">
+    <div class="twelve columns">
+      <h2>Manage</h2>
+      <h5>OneContact.Link</h5>
+      <p>Your OneContact.Link is: <a href='#'>https://onecontact.link/s/agz28g-ahbw0grk</a>
+      <br />
+      Share it!
+      </p>
+      <h5>Emails</h5>
+      <table class="u-full-width">
+        <tbody>
+          <tr>
+            <td><strong>rob@robert.com</strong> (Main)</td>
+            <td colspan="2">This is the email used to manage your account.</td>
+          </tr>
+          <tr>
+            <td>robert@robert.com</td>
+            <td>
+              <button class="button">Set as main</button>
+              <button>Delete</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input type='text' placeholder="new@email.com">
+            </td>
+            <td>
+              <input class='button' type='submit' value='Add'>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="row">
+    <div class="twelve columns">
+      <div class='warning'>
+        You can't do that!
+      </div>
+    </div>
+  </div>
+
+  <hr />
+</div>
+
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+<script src='https://www.google.com/recaptcha/api.js'></script>
+</html>
