@@ -7,11 +7,13 @@ import (
 	"github.com/VividCortex/siesta"
 
 	"database/sql"
+	"log"
 	"net/http"
 )
 
 func getToken(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	db := c.Get(middleware.DBKey).(*sql.DB)
+	requestID := c.Get(middleware.RequestIDKey).(string)
 
 	var params siesta.Params
 	tokenValue := params.String("token", "", "API token")
@@ -19,6 +21,7 @@ func getToken(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.Set(middleware.StatusCodeKey, http.StatusBadRequest)
 		c.Set(middleware.ResponseErrorKey, err)
+		log.Printf("[Req %s] %v", requestID, err)
 		return
 	}
 
@@ -29,6 +32,7 @@ func getToken(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.Set(middleware.StatusCodeKey, http.StatusNotFound)
 		c.Set(middleware.ResponseErrorKey, err.Error())
+		log.Printf("[Req %s] %v", requestID, err)
 		return
 	}
 	c.Set(middleware.ResponseDataKey, token)

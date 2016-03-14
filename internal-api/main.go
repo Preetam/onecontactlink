@@ -5,6 +5,7 @@ import (
 
 	"github.com/VividCortex/siesta"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mailgun/mailgun-go"
 
 	"database/sql"
 	"flag"
@@ -13,32 +14,36 @@ import (
 )
 
 var (
-	DSN = "testuser@tcp(127.0.0.1:3306)/mail_test?charset=utf8"
+	DSN           = "testuser@tcp(127.0.0.1:3306)/mail_test?charset=utf8"
+	MailgunDomain = "samples.mailgun.org"
+	MailgunKey    = "key-CHANGETHIS"
+	MailgunPubKey = ""
+)
+
+const (
+	MailgunContextKey = "mailgun"
 )
 
 func main() {
 	addr := flag.String("addr", ":4001", "Listen address")
-	dbDSN := flag.String("db-dsn", DSN, "MySQL dsn")
+	flag.StringVar(&DSN, "db-dsn", DSN, "MySQL dsn")
+	flag.StringVar(&MailgunDomain, "mailgun-domain", MailgunDomain, "Mailgun domain")
+	flag.StringVar(&MailgunKey, "mailgun-key", MailgunKey, "Mailgun private key")
+	flag.StringVar(&MailgunPubKey, "mailgun-pubkey", MailgunPubKey, "Mailgun public key")
 	flag.Parse()
 
-	db, err := sql.Open("mysql", *dbDSN)
+	db, err := sql.Open("mysql", DSN)
 	if err != nil {
 		log.Fatal(err)
 	}
+	mg := mailgun.NewMailgun(MailgunDomain, MailgunKey, MailgunPubKey)
 
 	service := siesta.NewService("/v1")
-
 	service.AddPre(middleware.RequestIdentifier)
-
-	// Add access to the state via the context in every handler.
 	service.AddPre(func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		c.Set(middleware.DBKey, db)
+		c.Set(MailgunContextKey, mg)
 	})
-
-	// We'll add the authenticator middleware to the "pre" chain.
-	// It will ensure that every request has a valid token.
-	//service.AddPre(authenticator)
-
 	// Response generation
 	service.AddPost(middleware.ResponseGenerator)
 	service.AddPost(middleware.ResponseWriter)
@@ -53,7 +58,9 @@ func main() {
 		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			c.Set(middleware.StatusCodeKey, http.StatusNoContent)
 		})
+
 	service.Route("GET", "/tokens/:token", "usage", getToken)
+	service.Route("POST", "/misc/sendMail", "usage", siesta.Compose(emailMessageReader, sendEmail))
 
 	log.Println("listening on", *addr)
 	log.Fatal(http.ListenAndServe(*addr, service))
