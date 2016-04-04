@@ -35,7 +35,6 @@ func New(baseURI string) Client {
 }
 
 func (c Client) doRequest(verb string, address string, body, response interface{}) error {
-
 	payload := bytes.NewBuffer(nil)
 	if body != nil {
 		err := json.NewEncoder(payload).Encode(body)
