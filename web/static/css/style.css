@@ -1,0 +1,65 @@
+body {
+  font-family: "Source Sans Pro", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.container {
+  max-width: 760px;
+}
+
+.brand {
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.brand a {
+  color: black;
+  text-decoration: none;
+}
+
+.navbar {
+  list-style: none;
+}
+
+.navbar-item {
+  position: relative;
+  float: left;
+  line-height: 3em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.navbar-item a {
+  margin-right: 4rem;
+  text-decoration: none;
+  color: black;
+}
+
+.message-bubble {
+  min-height: 3rem;
+  min-width: 3rem;
+  border-radius: 4px;
+  padding: 0 40px;
+  line-height: 40px;
+  text-align: center;
+}
+
+.message-bubble.info {
+  background-color: #D1ECFF;
+  border: 1px solid #A1CEED;
+}
+
+.message-bubble.warning {
+  background-color: #FFEEBA;
+  border: 1px solid #EDD691;
+}
+
+.message-bubble.error {
+  background-color: #FFBABA;
+  border: 1px solid #ED9191;
+}
+
+@media (min-width: 550px) {
+  .navbar {
+    float: right;
+  }
+}
