@@ -6,8 +6,13 @@ import (
 	"github.com/VividCortex/siesta"
 
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
+)
+
+var (
+	templ = template.Must(template.ParseGlob("./templates/*"))
 )
 
 func main() {
@@ -17,6 +22,11 @@ func main() {
 
 	service := siesta.NewService("/")
 	service.AddPre(middleware.RequestIdentifier)
+
+	service.Route("GET", "/", "serves index", func(w http.ResponseWriter, r *http.Request) {
+		templ.ExecuteTemplate(w, "index", nil)
+	})
+
 	service.SetNotFound(http.FileServer(http.Dir(*staticDir)))
 	log.Println("static directory set to", *staticDir)
 	log.Println("listening on", *addr)
