@@ -9,16 +9,24 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 )
 
 var (
-	templ = template.Must(template.ParseGlob("./templates/*"))
+	templ *template.Template
 )
 
 func main() {
 	addr := flag.String("addr", ":4003", "Listen address")
 	staticDir := flag.String("static-dir", "./static", "Path to static content")
+	templatesDir := flag.String("templates-dir", "./templates", "Path to templates")
 	flag.Parse()
+
+	var err error
+	templ, err = template.ParseGlob(filepath.Join(*templatesDir, "*"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	service := siesta.NewService("/")
 	service.AddPre(middleware.RequestIdentifier)
