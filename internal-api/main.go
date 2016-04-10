@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	DSN           = "testuser@tcp(127.0.0.1:3306)/mail_test?charset=utf8"
+	DSN           = "testuser@tcp(127.0.0.1:3306)/onecontactlink_test?charset=utf8"
 	MailgunDomain = "samples.mailgun.org"
 	MailgunKey    = "key-CHANGETHIS"
 	MailgunPubKey = ""
