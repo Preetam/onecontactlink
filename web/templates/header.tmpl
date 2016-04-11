@@ -29,4 +29,46 @@
   <!-- Primary Page Layout
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <div class="container">
+
+  {{ template "nav" . }}
+
+  {{ if .Info }}
+    <div class="row">
+      <div class="twelve columns">
+        <div class='message-bubble info noselect'>
+          Info: {{ .Info }}
+        </div>
+      </div>
+    </div>
+  {{ end }}
+
+  {{ if .Success }}
+    <div class="row">
+      <div class="twelve columns">
+        <div class='message-bubble success noselect'>
+          Success: {{ .Success }}
+        </div>
+      </div>
+    </div>
+  {{ end }}
+
+  {{ if .Warning }}
+    <div class="row">
+      <div class="twelve columns">
+        <div class='message-bubble warning noselect'>
+          Warning: {{ .Warning }}
+        </div>
+      </div>
+    </div>
+  {{ end }}
+
+  {{ if .Error }}
+    <div class="row">
+      <div class="twelve columns">
+        <div class='message-bubble error noselect'>
+          Error: {{ .Error }}
+        </div>
+      </div>
+    </div>
+  {{ end }}
 {{ end }}
