@@ -29,6 +29,7 @@ func main() {
 	}
 
 	service := siesta.NewService("/")
+	service.DisableTrimSlash()
 	service.AddPre(middleware.RequestIdentifier)
 
 	service.Route("GET", "/", "serves index", func(w http.ResponseWriter, r *http.Request) {
