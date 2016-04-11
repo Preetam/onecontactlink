@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Set the base href -->
+  <script>document.write('<base href="' + document.location + '" />');</script>
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>OneContact.Link</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,700' rel='stylesheet' type='text/css'>
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/skeleton.css">
+  <link rel="stylesheet" href="/css/style.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 1. Load libraries -->
+  <!-- IE required polyfills (from CDN), in this exact order -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.0/es6-shim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.19.25/system-polyfills.js"></script>
+  <script src="https://npmcdn.com/angular2/es6/dev/src/testing/shims_for_IE.js"></script>
+
+  <script src="https://code.angularjs.org/tools/system.js"></script>
+  <script src="https://code.angularjs.org/tools/typescript.js"></script>
+  <script src="https://code.angularjs.org/2.0.0-beta.14/angular2-polyfills.js"></script>
+  <script src="https://code.angularjs.org/2.0.0-beta.14/Rx.js"></script>
+  <script src="https://code.angularjs.org/2.0.0-beta.14/angular2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/2.0.0-beta.14/router.js"></script>
+  <!-- 2. Configure SystemJS -->
+  <script>
+    System.config({
+      transpiler: 'typescript',
+      typescriptOptions: { emitDecoratorMetadata: true },
+      packages: {'app': {defaultExtension: 'ts'}}
+    });
+    System.import('app/main')
+          .then(null, console.error.bind(console));
+  </script>
+</head>
+<body>
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <div class="container">
+    <main-app>Loading...</main-app>
+  </div>
+</body>
+</html>
