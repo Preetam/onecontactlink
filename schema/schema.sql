@@ -1,3 +1,16 @@
+CREATE TABLE `users` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(60) CHARACTER SET utf8 NOT NULL,
+  `code` varchar(6) NOT NULL,
+  `main_email` int(10) NOT NULL,
+  `created` int(10) unsigned NOT NULL,
+  `updated` int(10) unsigned NOT NULL,
+  `deleted` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  UNIQUE KEY `main_email` (`main_email`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
 CREATE TABLE `emails` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `address` varchar(255) NOT NULL,
@@ -5,15 +18,9 @@ CREATE TABLE `emails` (
   `created` int(10) unsigned NOT NULL,
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`,`address`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `address` (`address`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
-
-CREATE TABLE `schema_version` (
-  `version` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `ts` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `tokens` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -27,17 +34,24 @@ CREATE TABLE `tokens` (
   UNIQUE KEY `value` (`value`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `users` (
+CREATE TABLE `requests` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(60) CHARACTER SET utf8 NOT NULL,
-  `main_email` int(10) NOT NULL,
+  `code` varchar(8) NOT NULL,
+  `from` int(10) NOT NULL DEFAULT '0',
+  `to` int(10) NOT NULL DEFAULT '0',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL,
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `main_email` (`main_email`)
+  PRIMARY KEY (`id`)
+  UNIQUE KEY `code_to` (`code`, `to`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
+CREATE TABLE `schema_version` (
+  `version` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ts` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`version`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `schema_version` VALUES
   (1, UNIX_TIMESTAMP());
