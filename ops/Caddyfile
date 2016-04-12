@@ -9,7 +9,7 @@ api.onecontact.link {
 }
 
 onecontact.link {
-	redir https://www.onecontact.link
+	redir https://www.onecontact.link{uri}
 	header / -Server
 }
 
