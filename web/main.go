@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -34,6 +35,23 @@ func main() {
 
 	service.Route("GET", "/", "serves index", func(w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "index", nil)
+	})
+
+	service.Route("GET", "/l/:link", "serves link requests", func(w http.ResponseWriter, r *http.Request) {
+		params := &siesta.Params{}
+		linkStr := params.String("link", "", "link code")
+		err := params.Parse(r.Form)
+		if err != nil || !strings.Contains(*linkStr, "-") {
+			w.WriteHeader(http.StatusBadRequest)
+			templ.ExecuteTemplate(w, "invalid", map[string]string{
+				"Error": "Not a valid OneContactLink",
+			})
+			return
+		}
+		log.Println("requested link:", *linkStr)
+		templ.ExecuteTemplate(w, "request", map[string]string{
+			"Name": "John Doe",
+		})
 	})
 
 	service.SetNotFound(http.FileServer(http.Dir(*staticDir)))
