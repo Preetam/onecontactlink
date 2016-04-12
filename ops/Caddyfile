@@ -8,7 +8,12 @@ api.onecontact.link {
 	header / -Server
 }
 
-onecontact.link, www.onecontact.link {
+onecontact.link {
+	redir https://www.onecontact.link
+	header / -Server
+}
+
+www.onecontact.link {
 	proxy / localhost:4003
 	header / -Server
 }
