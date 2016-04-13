@@ -17,15 +17,16 @@ const (
 )
 
 func emailMessageReader(c siesta.Context, w http.ResponseWriter, r *http.Request, q func()) {
-	requestID := c.Get(middleware.RequestIDKey).(string)
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+
 	var message client.EmailMessage
 	err := json.NewDecoder(r.Body).Decode(&message)
 	if err == nil {
 		c.Set(messageKey, message)
 	} else {
-		c.Set(middleware.StatusCodeKey, http.StatusBadRequest)
-		c.Set(middleware.ResponseErrorKey, err.Error())
-		log.Printf("[Req %s] %v", requestID, err)
+		requestData.StatusCode = http.StatusBadRequest
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
 		q()
 	}
 }
@@ -33,15 +34,15 @@ func emailMessageReader(c siesta.Context, w http.ResponseWriter, r *http.Request
 func sendEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	mg := c.Get(MailgunContextKey).(mailgun.Mailgun)
 	msg := c.Get(messageKey).(client.EmailMessage)
-	requestID := c.Get(middleware.RequestIDKey).(string)
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 
 	_, _, err := mg.Send(mailgun.NewMessage(msg.From, msg.Subject, msg.Content, msg.To))
 	if err != nil {
-		c.Set(middleware.StatusCodeKey, http.StatusInternalServerError)
-		c.Set(middleware.ResponseErrorKey, err.Error())
-		log.Printf("[Req %s] %v", requestID, err)
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
-	c.Set(middleware.StatusCodeKey, http.StatusNoContent)
+	requestData.StatusCode = http.StatusNoContent
 }

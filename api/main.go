@@ -26,16 +26,17 @@ func main() {
 	service := siesta.NewService("/v1")
 	service.AddPre(middleware.RequestIdentifier)
 	service.AddPre(func(c siesta.Context, w http.ResponseWriter, r *http.Request, q func()) {
+		requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 		tokenValue, _, ok := r.BasicAuth()
 		if !ok {
-			c.Set(middleware.StatusCodeKey, http.StatusUnauthorized)
+			requestData.StatusCode = http.StatusUnauthorized
 			q()
 			return
 		}
 		token, err := internalClient.Authenticate(tokenValue)
 		if err != nil {
 			log.Println(err)
-			c.Set(middleware.StatusCodeKey, http.StatusUnauthorized)
+			requestData.StatusCode = http.StatusUnauthorized
 			q()
 			return
 		}
@@ -46,7 +47,8 @@ func main() {
 
 	service.Route("GET", "/ping", "ping",
 		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-			c.Set(middleware.StatusCodeKey, http.StatusNoContent)
+			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+			requestData.StatusCode = http.StatusNoContent
 		})
 
 	log.Println("listening on", *addr)

@@ -41,7 +41,8 @@ func main() {
 	service := siesta.NewService("/v1")
 	service.AddPre(middleware.RequestIdentifier)
 	service.AddPre(func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-		c.Set(middleware.DBKey, db)
+		requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+		requestData.DB = db
 		c.Set(MailgunContextKey, mg)
 	})
 	// Response generation
@@ -50,13 +51,15 @@ func main() {
 
 	// Custom 404 handler
 	service.SetNotFound(func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-		c.Set(middleware.StatusCodeKey, http.StatusNotFound)
-		c.Set(middleware.ResponseErrorKey, "not found")
+		requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+		requestData.StatusCode = http.StatusNotFound
+		requestData.ResponseError = "not found"
 	})
 
 	service.Route("GET", "/ping", "ping",
 		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-			c.Set(middleware.StatusCodeKey, http.StatusNoContent)
+			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+			requestData.StatusCode = http.StatusNoContent
 		})
 
 	service.Route("GET", "/tokens/:token", "usage", getToken)

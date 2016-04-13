@@ -7,4 +7,5 @@ const (
 	ResponseDataKey  = "response-data"
 	ResponseErrorKey = "response-error"
 	ResponseKey      = "response"
+	RequestDataKey   = "request-data"
 )

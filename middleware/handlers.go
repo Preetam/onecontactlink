@@ -17,20 +17,21 @@ type APIResponse struct {
 
 func RequestIdentifier(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	requestID := fmt.Sprintf("%08x", rand.Intn(0xffffffff))
-	c.Set(RequestIDKey, requestID)
+	c.Set(RequestDataKey, &RequestData{
+		RequestID: requestID,
+	})
 	log.Printf("[Req %s] %s %s", requestID, r.Method, r.URL)
 }
 
 func ResponseGenerator(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(RequestDataKey).(*RequestData)
 	response := APIResponse{}
 
-	if data := c.Get(ResponseDataKey); data != nil {
+	if data := requestData.ResponseData; data != nil {
 		response.Data = data
 	}
 
-	if err := c.Get(ResponseErrorKey); err != nil {
-		response.Error = err.(string)
-	}
+	response.Error = requestData.ResponseError
 
 	if response.Data != nil || response.Error != "" {
 		c.Set(ResponseKey, response)
@@ -39,9 +40,10 @@ func ResponseGenerator(c siesta.Context, w http.ResponseWriter, r *http.Request)
 
 func ResponseWriter(c siesta.Context, w http.ResponseWriter, r *http.Request,
 	quit func()) {
+	requestData := c.Get(RequestDataKey).(*RequestData)
 	// Set the request ID header.
-	if requestID := c.Get(RequestIDKey); requestID != nil {
-		w.Header().Set("X-Request-Id", requestID.(string))
+	if requestData.RequestID != "" {
+		w.Header().Set("X-Request-Id", requestData.RequestID)
 	}
 
 	// Set the content type.
@@ -53,10 +55,8 @@ func ResponseWriter(c siesta.Context, w http.ResponseWriter, r *http.Request,
 	// send that in the header.
 	//
 	// Go defaults to 200 OK.
-	statusCode := c.Get(StatusCodeKey)
-	if statusCode != nil {
-		statusCodeInt := statusCode.(int)
-		w.WriteHeader(statusCodeInt)
+	if requestData.StatusCode != 0 {
+		w.WriteHeader(requestData.StatusCode)
 	}
 
 	// Check to see if we have some sort of response.
