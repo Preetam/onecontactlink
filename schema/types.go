@@ -29,11 +29,20 @@ type Token struct {
 }
 
 type Request struct {
+	ID        int    `json:"id"`
+	Code      string `json:"code"`
+	FromEmail int    `json:"fromEmail"`
+	ToUser    int    `json:"toUser"`
+	Status    int    `json:"status"`
+	Created   int    `json:"created"`
+	Updated   int    `json:"updated"`
+	Deleted   int    `json:"deleted"`
+}
+
+type RequestLink struct {
 	ID      int    `json:"id"`
+	User    int    `json:"user"`
 	Code    string `json:"code"`
-	From    int    `json:"from"`
-	To      int    `json:"to"`
-	Status  int    `json:"status"`
 	Created int    `json:"created"`
 	Updated int    `json:"updated"`
 	Deleted int    `json:"deleted"`

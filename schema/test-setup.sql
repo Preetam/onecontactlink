@@ -2,7 +2,7 @@
 
 -- MySQL dump 10.13  Distrib 5.6.12, for osx10.7 (x86_64)
 --
--- Host: 10.0.0.104    Database: onecontactlink_test
+-- Host: web1    Database: onecontactlink_test
 -- ------------------------------------------------------
 -- Server version	5.7.11
 
@@ -31,7 +31,7 @@ CREATE TABLE `emails` (
   `created` int(10) unsigned NOT NULL,
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`,`address`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `address` (`address`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -43,6 +43,64 @@ CREATE TABLE `emails` (
 LOCK TABLES `emails` WRITE;
 /*!40000 ALTER TABLE `emails` DISABLE KEYS */;
 /*!40000 ALTER TABLE `emails` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `request_links`
+--
+
+DROP TABLE IF EXISTS `request_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `request_links` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user` int(10) unsigned NOT NULL,
+  `code` varchar(8) NOT NULL,
+  `created` int(10) unsigned NOT NULL,
+  `updated` int(10) unsigned NOT NULL,
+  `deleted` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `request_links`
+--
+
+LOCK TABLES `request_links` WRITE;
+/*!40000 ALTER TABLE `request_links` DISABLE KEYS */;
+/*!40000 ALTER TABLE `request_links` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `requests`
+--
+
+DROP TABLE IF EXISTS `requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `requests` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(8) NOT NULL,
+  `from_email` int(10) NOT NULL DEFAULT '0',
+  `to_user` int(10) NOT NULL DEFAULT '0',
+  `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `created` int(10) unsigned NOT NULL,
+  `updated` int(10) unsigned NOT NULL,
+  `deleted` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code_to` (`code`,`to_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `requests`
+--
+
+LOCK TABLES `requests` WRITE;
+/*!40000 ALTER TABLE `requests` DISABLE KEYS */;
+/*!40000 ALTER TABLE `requests` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -65,7 +123,7 @@ CREATE TABLE `schema_version` (
 
 LOCK TABLES `schema_version` WRITE;
 /*!40000 ALTER TABLE `schema_version` DISABLE KEYS */;
-INSERT INTO `schema_version` VALUES (1,1460319659);
+INSERT INTO `schema_version` VALUES (1,1460599956);
 /*!40000 ALTER TABLE `schema_version` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -108,11 +166,13 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(60) CHARACTER SET utf8 NOT NULL,
+  `code` varchar(6) NOT NULL,
   `main_email` int(10) NOT NULL,
   `created` int(10) unsigned NOT NULL,
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
   UNIQUE KEY `main_email` (`main_email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -135,4 +195,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-04-10 16:27:52
+-- Dump completed on 2016-04-13 22:12:41

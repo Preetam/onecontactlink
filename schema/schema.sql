@@ -37,14 +37,25 @@ CREATE TABLE `tokens` (
 CREATE TABLE `requests` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `code` varchar(8) NOT NULL,
-  `from` int(10) NOT NULL DEFAULT '0',
-  `to` int(10) NOT NULL DEFAULT '0',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `from_email` int(10) NOT NULL DEFAULT '0',
+  `to_user` int(10) NOT NULL DEFAULT '0',
+  `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL,
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-  UNIQUE KEY `code_to` (`code`, `to`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code_to` (`code`, `to_user`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+CREATE TABLE `request_links` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user` int(10) unsigned NOT NULL,
+  `code` varchar(8) NOT NULL,
+  `created` int(10) unsigned NOT NULL,
+  `updated` int(10) unsigned NOT NULL,
+  `deleted` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 CREATE TABLE `schema_version` (
