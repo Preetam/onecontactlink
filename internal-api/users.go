@@ -72,6 +72,7 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
+		// Create email address
 		execResult, err := tx.Exec("INSERT INTO emails (address, created, updated)"+
 			" VALUES (?, ?, ?)", user.MainEmail, now, now)
 		emailID, err := execResult.LastInsertId()
@@ -83,7 +84,8 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		email.ID = int(emailID)
 	}
 
-	user.Code = generateCode(4)
+	// Create user
+	user.Code = generateCode(6)
 	user.Created = int(now)
 	user.Updated = int(now)
 	execResult, err := tx.Exec("INSERT INTO users (name, code, main_email, created, updated)"+
@@ -101,12 +103,23 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	}
 	user.ID = int(userID)
 
+	// Link email to user
 	_, err = tx.Exec("UPDATE emails SET user = ? WHERE id = ?", user.ID, email.ID)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		log.Printf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
+
+	// Generate a request link
+	_, err = tx.Exec("INSERT INTO request_links (user, code, created, updated)"+
+		" VALUES (?,?,?,?)", user.ID, generateCode(8), now, now)
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError

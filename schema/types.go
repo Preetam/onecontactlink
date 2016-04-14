@@ -5,6 +5,7 @@ type User struct {
 	Name      string `json:"name"`
 	Code      string `json:"code"`
 	MainEmail string `json:"mainEmail"`
+	Status    int    `json:"status"`
 	Created   int    `json:"created"`
 	Updated   int    `json:"updated"`
 	Deleted   int    `json:"deleted"`
@@ -29,14 +30,14 @@ type Token struct {
 }
 
 type Request struct {
-	ID        int    `json:"id"`
-	Code      string `json:"code"`
-	FromEmail int    `json:"fromEmail"`
-	ToUser    int    `json:"toUser"`
-	Status    int    `json:"status"`
-	Created   int    `json:"created"`
-	Updated   int    `json:"updated"`
-	Deleted   int    `json:"deleted"`
+	ID       int    `json:"id"`
+	Code     string `json:"code"`
+	FromUser int    `json:"fromUser"`
+	ToUser   int    `json:"toUser"`
+	Status   int    `json:"status"`
+	Created  int    `json:"created"`
+	Updated  int    `json:"updated"`
+	Deleted  int    `json:"deleted"`
 }
 
 type RequestLink struct {

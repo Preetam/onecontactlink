@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/VividCortex/siesta"
 
-	"log"
 	"net/http"
 	"strings"
 )
@@ -12,14 +11,23 @@ func serveGetRequest(w http.ResponseWriter, r *http.Request) {
 	params := &siesta.Params{}
 	linkStr := params.String("link", "", "link code")
 	err := params.Parse(r.Form)
-	if err != nil || !strings.Contains(*linkStr, "-") {
+
+	invalidLink := func() {
 		w.WriteHeader(http.StatusBadRequest)
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Not a valid OneContactLink",
 		})
 		return
 	}
-	log.Println("requested link:", *linkStr)
+
+	if err != nil || !strings.Contains(*linkStr, "-") {
+		invalidLink()
+	}
+	parts := strings.Split(*linkStr, "-")
+	if len(parts) != 2 {
+		invalidLink()
+	}
+
 	templ.ExecuteTemplate(w, "request", map[string]string{
 		"Name": "John Doe",
 	})

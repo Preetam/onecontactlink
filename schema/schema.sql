@@ -3,6 +3,7 @@ CREATE TABLE `users` (
   `name` varchar(60) CHARACTER SET utf8 NOT NULL,
   `code` varchar(6) NOT NULL,
   `main_email` int(10) NOT NULL,
+  `status` tinyint(3) NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL,
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
@@ -37,7 +38,7 @@ CREATE TABLE `tokens` (
 CREATE TABLE `requests` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `code` varchar(8) NOT NULL,
-  `from_email` int(10) NOT NULL DEFAULT '0',
+  `from_user` int(10) NOT NULL DEFAULT '0',
   `to_user` int(10) NOT NULL DEFAULT '0',
   `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL,
