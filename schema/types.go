@@ -4,7 +4,7 @@ type User struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
 	Code      string `json:"code"`
-	MainEmail int    `json:"mainEmail"`
+	MainEmail string `json:"mainEmail"`
 	Created   int    `json:"created"`
 	Updated   int    `json:"updated"`
 	Deleted   int    `json:"deleted"`

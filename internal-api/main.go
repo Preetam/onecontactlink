@@ -65,6 +65,9 @@ func main() {
 	service.Route("GET", "/tokens/:token", "usage", getToken)
 	service.Route("POST", "/misc/sendMail", "usage", siesta.Compose(emailMessageReader, sendEmail))
 
+	// Users
+	service.Route("POST", "/users", "creates a user", siesta.Compose(readUser, createUser))
+
 	log.Println("listening on", *addr)
 	log.Fatal(http.ListenAndServe(*addr, service))
 }
