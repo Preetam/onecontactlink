@@ -122,7 +122,7 @@ CREATE TABLE `schema_version` (
 
 LOCK TABLES `schema_version` WRITE;
 /*!40000 ALTER TABLE `schema_version` DISABLE KEYS */;
-INSERT INTO `schema_version` VALUES (1,1460926682);
+INSERT INTO `schema_version` VALUES (1,1460927208);
 /*!40000 ALTER TABLE `schema_version` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -195,4 +195,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-04-17 16:58:31
+-- Dump completed on 2016-04-17 17:06:52
