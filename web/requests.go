@@ -103,15 +103,18 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	if recaptchaAPIResponse.Success {
-		templ.ExecuteTemplate(w, "success", map[string]string{
-			"Success": "Request sent!",
-		})
-	} else {
+	if !recaptchaAPIResponse.Success {
 		w.WriteHeader(http.StatusBadRequest)
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
-			"Error": "Bad CAPTCHA",
+			"Error": "Couldn't verify CAPTCHA",
 		})
 		return
 	}
+
+	templ.ExecuteTemplate(w, "success", map[string]string{
+		"Success": "Request sent!",
+	})
+
+	// TODO:
+	// - Submit request to internal API
 }
