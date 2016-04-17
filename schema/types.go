@@ -1,10 +1,10 @@
 package schema
 
 const (
-	UserCodeSize    = 6
-	RequestCodeSize = 32
-	TokenSize       = 32
-	LinkCodeSize    = 32
+	UserCodeSize        = 6
+	RequestLinkCodeSize = 8
+	RequestCodeSize     = 32
+	TokenSize           = 32
 )
 
 type User struct {

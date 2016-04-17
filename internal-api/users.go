@@ -144,7 +144,7 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 
 	// Generate a request link
 	_, err = tx.Exec("INSERT INTO request_links (user, code, created, updated)"+
-		" VALUES (?,?,?,?)", user.ID, generateCode(8), now, now)
+		" VALUES (?,?,?,?)", user.ID, generateCode(schema.RequestLinkCodeSize), now, now)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		log.Printf("[Req %s] %v", requestData.RequestID, err)
