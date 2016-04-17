@@ -45,6 +45,7 @@ CREATE TABLE `requests` (
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `from_to` (`from_user`, `to_user`),
   UNIQUE KEY `code_to` (`code`, `to_user`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
