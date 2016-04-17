@@ -43,7 +43,7 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	code := generateCode(8)
+	code := generateCode(schema.RequestCodeSize)
 	now := time.Now().Unix()
 	tx, err := requestData.DB.Begin()
 	if err != nil {

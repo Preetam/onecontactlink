@@ -37,7 +37,7 @@ CREATE TABLE `tokens` (
 
 CREATE TABLE `requests` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `code` varchar(8) NOT NULL,
+  `code` varchar(16) NOT NULL,
   `from_user` int(10) NOT NULL DEFAULT '0',
   `to_user` int(10) NOT NULL DEFAULT '0',
   `status` tinyint(3) unsigned NOT NULL DEFAULT '0',

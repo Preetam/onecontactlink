@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 
+	"github.com/Preetam/onecontactlink/internal-api/client"
+	"github.com/Preetam/onecontactlink/schema"
+
 	"github.com/VividCortex/siesta"
 
 	"net/http"
@@ -157,13 +160,53 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	toUser := user.ID
+	fromUser := 0
+
+	email, err := internalAPIClient.GetEmail(*emailStr)
+	if err != nil {
+		if err == client.ErrNotFound {
+			// Email doesn't exist. Create a new user with the email.
+			user, err := internalAPIClient.CreateUser(schema.NewUser(*nameStr, *emailStr))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				templ.ExecuteTemplate(w, "request", map[string]string{
+					"Name":    user.Name,
+					"Warning": "Something went wrong. Please try again.",
+				})
+				return
+			}
+			fromUser = user.ID
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			templ.ExecuteTemplate(w, "request", map[string]string{
+				"Name":    user.Name,
+				"Warning": "Something went wrong. Please try again.",
+			})
+			return
+		}
+	} else {
+		fromUser = email.User
+	}
+
+	_, err = internalAPIClient.CreateRequest(fromUser, toUser)
+	if err != nil {
+		if err == client.ErrConflict {
+			templ.ExecuteTemplate(w, "request", map[string]string{
+				"Name":    user.Name,
+				"Warning": "Looks like you already made this request.",
+			})
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "request", map[string]string{
+			"Name":    user.Name,
+			"Warning": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
 	templ.ExecuteTemplate(w, "success", map[string]string{
 		"Success": "Request sent!",
 	})
-
-	// TODO:
-	// - Get "toUser" ID using request_links table
-	// - Get "fromUser" ID using provided email address
-	//   - Create the user if one does not exist
-	// - Submit request to internal API
 }

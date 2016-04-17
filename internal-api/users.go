@@ -116,7 +116,7 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create user
-	user.Code = generateCode(6)
+	user.Code = generateCode(schema.UserCodeSize)
 	user.Created = int(now)
 	user.Updated = int(now)
 	execResult, err := tx.Exec("INSERT INTO users (name, code, main_email, created, updated)"+

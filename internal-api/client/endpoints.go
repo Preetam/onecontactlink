@@ -12,6 +12,7 @@ import (
 
 var (
 	ErrConflict = errors.New("client: conflict")
+	ErrNotFound = errors.New("client: not found")
 )
 
 type EmailMessage struct {
@@ -68,7 +69,40 @@ func (c *Client) GetUser(id int) (*schema.User, error) {
 	}
 	err := c.doRequest("GET", fmt.Sprintf("/users/%d", id), nil, &resp)
 	if err != nil {
+		if serverErr, ok := err.(ServerError); ok {
+			if serverErr == http.StatusNotFound {
+				return nil, ErrNotFound
+			}
+		}
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (c *Client) CreateUser(user *schema.User) (*schema.User, error) {
+	resp := middleware.APIResponse{
+		Data: user,
+	}
+	err := c.doRequest("POST", "/users", user, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (c *Client) GetEmail(address string) (*schema.Email, error) {
+	email := schema.Email{}
+	resp := middleware.APIResponse{
+		Data: &email,
+	}
+	err := c.doRequest("GET", fmt.Sprintf("/emails/%s", address), nil, &resp)
+	if err != nil {
+		if serverErr, ok := err.(ServerError); ok {
+			if serverErr == http.StatusNotFound {
+				return nil, ErrNotFound
+			}
+		}
+		return nil, err
+	}
+	return &email, nil
 }

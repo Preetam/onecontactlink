@@ -1,5 +1,12 @@
 package schema
 
+const (
+	UserCodeSize    = 6
+	RequestCodeSize = 32
+	TokenSize       = 32
+	LinkCodeSize    = 32
+)
+
 type User struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
@@ -47,4 +54,11 @@ type RequestLink struct {
 	Created int    `json:"created"`
 	Updated int    `json:"updated"`
 	Deleted int    `json:"deleted"`
+}
+
+func NewUser(name, email string) *User {
+	return &User{
+		Name:      name,
+		MainEmail: email,
+	}
 }

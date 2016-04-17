@@ -69,6 +69,9 @@ func main() {
 	service.Route("GET", "/users/:id", "gets a user", getUserByID)
 	service.Route("POST", "/users", "creates a user", siesta.Compose(readUser, createUser))
 
+	// Emails
+	service.Route("GET", "/emails/:address", "gets an email", getEmailByAddress)
+
 	// Requests
 	service.Route("POST", "/requests", "creates a request", siesta.Compose(readRequest, createRequest))
 
