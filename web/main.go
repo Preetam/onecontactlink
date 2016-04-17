@@ -25,7 +25,7 @@ func main() {
 	addr := flag.String("addr", ":4003", "Listen address")
 	staticDir := flag.String("static-dir", "./static", "Path to static content")
 	templatesDir := flag.String("templates-dir", "./templates", "Path to templates")
-	internalAPIURL := flag.String("internal-api", "http://localhost:4001", "internal API URL")
+	internalAPIURL := flag.String("internal-api", "http://localhost:4001/v1", "internal API URL")
 	flag.StringVar(&RecaptchaSecret, "recaptcha-secret", "", "reCHAPTCHA API secret")
 	flag.Parse()
 

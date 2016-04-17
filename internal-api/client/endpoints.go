@@ -48,3 +48,27 @@ func (c *Client) CreateRequest(fromUser, toUser int) (int, error) {
 	}
 	return request.ID, nil
 }
+
+func (c *Client) GetRequestLink(code string) (*schema.RequestLink, error) {
+	requestLink := schema.RequestLink{}
+	resp := middleware.APIResponse{
+		Data: &requestLink,
+	}
+	err := c.doRequest("GET", fmt.Sprintf("/links/requests/%s", code), nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &requestLink, nil
+}
+
+func (c *Client) GetUser(id int) (*schema.User, error) {
+	user := schema.User{}
+	resp := middleware.APIResponse{
+		Data: &user,
+	}
+	err := c.doRequest("GET", fmt.Sprintf("/users/%d", id), nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

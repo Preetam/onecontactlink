@@ -16,7 +16,7 @@ func serveGetRequest(w http.ResponseWriter, r *http.Request) {
 	err := params.Parse(r.Form)
 
 	invalidLink := func() {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Not a valid OneContactLink",
 		})
@@ -25,14 +25,38 @@ func serveGetRequest(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil || !strings.Contains(*linkStr, "-") {
 		invalidLink()
+		return
 	}
 	parts := strings.Split(*linkStr, "-")
 	if len(parts) != 2 {
 		invalidLink()
+		return
+	}
+
+	// get request link
+	requestLink, err := internalAPIClient.GetRequestLink(parts[1])
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	// get user
+	user, err := internalAPIClient.GetUser(requestLink.User)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong",
+		})
+		return
+	}
+
+	if user.Code != parts[0] {
+		invalidLink()
+		return
 	}
 
 	templ.ExecuteTemplate(w, "request", map[string]string{
-		"Name": "John Doe",
+		"Name": user.Name,
 	})
 }
 
@@ -68,6 +92,28 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get request link
+	requestLink, err := internalAPIClient.GetRequestLink(parts[1])
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	// get user
+	user, err := internalAPIClient.GetUser(requestLink.User)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong",
+		})
+		return
+	}
+
+	if user.Code != parts[0] {
+		invalidLink()
+		return
+	}
+
 	if *nameStr == "" || *emailStr == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		templ.ExecuteTemplate(w, "request", map[string]string{
@@ -84,7 +130,7 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		templ.ExecuteTemplate(w, "request", map[string]string{
-			"Name":    "John Doe",
+			"Name":    user.Name,
 			"Warning": "Something went wrong. Please try again.",
 		})
 		return
@@ -98,7 +144,7 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		templ.ExecuteTemplate(w, "request", map[string]string{
-			"Name":    "John Doe",
+			"Name":    user.Name,
 			"Warning": "Something went wrong. Please try again.",
 		})
 		return

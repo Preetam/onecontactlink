@@ -33,6 +33,38 @@ func readUser(c siesta.Context, w http.ResponseWriter, r *http.Request, q func()
 	}
 }
 
+func getUserByID(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+	var params siesta.Params
+	userID := params.Int("id", 0, "User ID")
+	err := params.Parse(r.Form)
+	if err != nil {
+		requestData.StatusCode = http.StatusBadRequest
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+	user := schema.User{
+		ID: *userID,
+	}
+	err = requestData.DB.QueryRow("SELECT users.name, users.code, emails.address, users.status,"+
+		" users.created, users.updated FROM users JOIN emails"+
+		" ON users.main_email = emails.id"+
+		" WHERE users.id = ? AND users.main_email != 0", user.ID).Scan(&user.Name, &user.Code,
+		&user.MainEmail, &user.Status, &user.Created, &user.Updated)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			requestData.StatusCode = http.StatusNotFound
+			log.Printf("[Req %s] %v", requestData.RequestID, err)
+			return
+		}
+		requestData.StatusCode = http.StatusInternalServerError
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+	requestData.ResponseData = user
+}
+
 func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	user := c.Get(userKey).(schema.User)
