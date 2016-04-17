@@ -116,5 +116,8 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// TODO:
+	// - Get "toUser" ID using request_links table
+	// - Get "fromUser" ID using provided email address
+	//   - Create the user if one does not exist
 	// - Submit request to internal API
 }

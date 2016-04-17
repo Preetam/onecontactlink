@@ -99,6 +99,13 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
 	request.ID = int(lastID)
 	requestData.ResponseData = request
 }
