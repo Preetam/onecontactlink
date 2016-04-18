@@ -357,11 +357,11 @@ func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 
 		messageContent := fmt.Sprintf(`Hi %s,
 
-	%s has approved your contact request! You can reach them at %s.
+%s has approved your contact request! You can reach them at %s.
 
-	Cheers!
-	https://www.onecontact.link/
-	`, receiverName, requestedName, requestedEmail)
+Cheers!
+https://www.onecontact.link/
+`, receiverName, requestedName, requestedEmail)
 		_, _, err = mg.Send(mailgun.NewMessage("\"OneContactLink Notifications\" <notify@out.onecontact.link>",
 			"OneContactLink request", messageContent, receiverEmail))
 		if err != nil {
