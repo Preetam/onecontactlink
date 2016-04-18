@@ -132,7 +132,7 @@ func (c *Client) GetRequestByCode(code string) (*schema.Request, error) {
 }
 
 func (c *Client) ManageRequest(id int, action string) error {
-	if action != "approve" || action != "reject" {
+	if action != "approve" && action != "reject" {
 		return fmt.Errorf("client: invalid action")
 	}
 	return c.doRequest("POST", fmt.Sprintf("/requests/%d/manage?action=%s", id, action), nil, nil)

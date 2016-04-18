@@ -245,7 +245,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if *actionStr != "approve" || *actionStr != "reject" {
+	if *actionStr != "approve" && *actionStr != "reject" {
 		w.WriteHeader(http.StatusBadRequest)
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Invalid action.",
