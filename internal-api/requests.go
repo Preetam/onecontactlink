@@ -147,6 +147,20 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 				// already exists
 				requestData.StatusCode = http.StatusConflict
 				log.Printf("[Req %s] %v", requestData.RequestID, err)
+
+				// send the existing request
+				err := tx.QueryRow("SELECT id, code, status, created, updated FROM"+
+					" requests WHERE from_user = ? AND to_user = ?",
+					request.FromUser, request.ToUser).
+					Scan(&request.ID, &request.Code, &request.Status,
+						&request.Created, &request.Updated)
+				if err != nil {
+					// Some other error
+					requestData.StatusCode = http.StatusInternalServerError
+					log.Printf("[Req %s] %v", requestData.RequestID, err)
+					return
+				}
+				requestData.ResponseData = request
 				return
 			}
 		}

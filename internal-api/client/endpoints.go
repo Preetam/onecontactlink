@@ -38,11 +38,14 @@ func (c *Client) CreateRequest(fromUser, toUser int) (int, error) {
 		FromUser: fromUser,
 		ToUser:   toUser,
 	}
-	err := c.doRequest("POST", "/requests", request, &request)
+	resp := middleware.APIResponse{
+		Data: &request,
+	}
+	err := c.doRequest("POST", "/requests", request, &resp)
 	if err != nil {
 		if serverErr, ok := err.(ServerError); ok {
 			if serverErr == http.StatusConflict {
-				return 0, ErrConflict
+				return request.ID, ErrConflict
 			}
 		}
 		return 0, err
