@@ -200,7 +200,7 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		" u1.name AS from_name,"+
 		" e1.address as from_address,"+
 		" u2.name as to_name,"+
-		" e2.address as to_address"+
+		" e2.address as to_address,"+
 		" u2.code as to_code"+
 		" FROM requests"+
 		" JOIN users u1 ON u1.id = from_user"+
