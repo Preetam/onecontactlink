@@ -346,7 +346,7 @@ func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			" JOIN users u2 ON u2.id = to_user"+
 			" JOIN emails e1 ON u1.main_email = e1.id"+
 			" JOIN emails e2 ON u2.main_email = e2.id"+
-			" WHERE requests.code = ?", *requestID).
+			" WHERE requests.id = ?", *requestID).
 			Scan(&receiverName, &receiverEmail, &requestedName, &requestedEmail)
 		if err != nil {
 			requestData.StatusCode = http.StatusInternalServerError
