@@ -21,8 +21,8 @@ func (e ServerError) Error() string {
 	return fmt.Sprintf("client: server status code %d", e)
 }
 
-func New(baseURI string) Client {
-	return Client{
+func New(baseURI string) *Client {
+	return &Client{
 		http: &http.Client{
 			Timeout: time.Second * 30,
 		},
@@ -34,7 +34,7 @@ func New(baseURI string) Client {
 	}
 }
 
-func (c Client) doRequest(verb string, address string, body, response interface{}) error {
+func (c *Client) doRequest(verb string, address string, body, response interface{}) error {
 	payload := bytes.NewBuffer(nil)
 	if body != nil {
 		err := json.NewEncoder(payload).Encode(body)

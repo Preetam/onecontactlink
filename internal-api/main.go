@@ -41,7 +41,8 @@ func main() {
 	service := siesta.NewService("/v1")
 	service.AddPre(middleware.RequestIdentifier)
 	service.AddPre(func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-		c.Set(middleware.DBKey, db)
+		requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+		requestData.DB = db
 		c.Set(MailgunContextKey, mg)
 	})
 	// Response generation
@@ -50,17 +51,36 @@ func main() {
 
 	// Custom 404 handler
 	service.SetNotFound(func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-		c.Set(middleware.StatusCodeKey, http.StatusNotFound)
-		c.Set(middleware.ResponseErrorKey, "not found")
+		requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+		requestData.StatusCode = http.StatusNotFound
+		requestData.ResponseError = "not found"
 	})
 
 	service.Route("GET", "/ping", "ping",
 		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-			c.Set(middleware.StatusCodeKey, http.StatusNoContent)
+			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+			requestData.StatusCode = http.StatusNoContent
 		})
 
 	service.Route("GET", "/tokens/:token", "usage", getToken)
 	service.Route("POST", "/misc/sendMail", "usage", siesta.Compose(emailMessageReader, sendEmail))
+
+	// Users
+	service.Route("GET", "/users/:id", "gets a user", getUserByID)
+	service.Route("POST", "/users", "creates a user", siesta.Compose(readUser, createUser))
+
+	// Emails
+	service.Route("GET", "/emails/:address", "gets an email", getEmailByAddress)
+
+	// Requests
+	service.Route("POST", "/requests", "creates a request", siesta.Compose(readRequest, createRequest))
+	service.Route("GET", "/requests/:id", "gets a request", getRequest)
+	service.Route("POST", "/requests/:id/sendEmail", "sends a request email to the user", sendRequestEmail)
+	service.Route("POST", "/requests/:id/manage", "approves or rejects a request", manageRequest)
+
+	// Links
+	service.Route("GET", "/links/requestLinks/:requestLinkCode", "gets a request link", getRequestLinkByCode)
+	service.Route("GET", "/links/requests/:requestCode", "gets a request", getRequestByCode)
 
 	log.Println("listening on", *addr)
 	log.Fatal(http.ListenAndServe(*addr, service))

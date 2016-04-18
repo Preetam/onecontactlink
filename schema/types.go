@@ -1,12 +1,37 @@
 package schema
 
+const (
+	UserCodeSize        = 6
+	RequestLinkCodeSize = 8
+	RequestCodeSize     = 32
+	TokenSize           = 32
+)
+
+const (
+	RequestStatusDefault = iota
+	RequestStatusSent
+	RequestStatusApproved
+	RequestStatusRejected
+)
+
 type User struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
-	MainEmail int    `json:"mainEmail"`
+	Code      string `json:"code"`
+	MainEmail string `json:"mainEmail"`
+	Status    int    `json:"status"`
 	Created   int    `json:"created"`
 	Updated   int    `json:"updated"`
 	Deleted   int    `json:"deleted"`
+}
+
+type Email struct {
+	ID      int    `json:"id"`
+	Address string `json:"address"`
+	User    int    `json:"user"`
+	Created int    `json:"created"`
+	Updated int    `json:"updated"`
+	Deleted int    `json:"deleted"`
 }
 
 type Token struct {
@@ -16,4 +41,31 @@ type Token struct {
 	Created int    `json:"created"`
 	Updated int    `json:"updated"`
 	Deleted int    `json:"deleted"`
+}
+
+type Request struct {
+	ID       int    `json:"id"`
+	Code     string `json:"code"`
+	FromUser int    `json:"fromUser"`
+	ToUser   int    `json:"toUser"`
+	Status   int    `json:"status"`
+	Created  int    `json:"created"`
+	Updated  int    `json:"updated"`
+	Deleted  int    `json:"deleted"`
+}
+
+type RequestLink struct {
+	ID      int    `json:"id"`
+	User    int    `json:"user"`
+	Code    string `json:"code"`
+	Created int    `json:"created"`
+	Updated int    `json:"updated"`
+	Deleted int    `json:"deleted"`
+}
+
+func NewUser(name, email string) *User {
+	return &User{
+		Name:      name,
+		MainEmail: email,
+	}
 }

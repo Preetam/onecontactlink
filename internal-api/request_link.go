@@ -10,11 +10,11 @@ import (
 	"net/http"
 )
 
-func getToken(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+func getRequestLinkByCode(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 
 	var params siesta.Params
-	tokenValue := params.String("token", "", "API token")
+	requestLinkCode := params.String("requestLinkCode", "", "Request link")
 	err := params.Parse(r.Form)
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
@@ -23,15 +23,18 @@ func getToken(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := schema.Token{}
-	err = requestData.DB.QueryRow("SELECT id, user, value, created, updated, deleted FROM tokens WHERE"+
-		" value = ?", *tokenValue).
-		Scan(&token.ID, &token.User, &token.Value, &token.Created, &token.Updated, &token.Deleted)
+	requestLink := schema.RequestLink{
+		Code: *requestLinkCode,
+	}
+	err = requestData.DB.QueryRow("SELECT id, user, created, updated, deleted FROM request_links"+
+		" WHERE code = ?", requestLink.Code).
+		Scan(&requestLink.ID, &requestLink.User, &requestLink.Created,
+			&requestLink.Updated, &requestLink.Deleted)
 	if err != nil {
 		requestData.StatusCode = http.StatusNotFound
 		requestData.ResponseError = err.Error()
 		log.Printf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
-	requestData.ResponseData = token
+	requestData.ResponseData = requestLink
 }

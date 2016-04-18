@@ -1,0 +1,28 @@
+{{ define "request" }}
+
+{{ template "header" . }}
+<div class="row">
+  <div class="twelve columns">
+  	<h2>Request contact information</h2>
+  	<p>{{ .Name }} is using OneContact.Link to share their latest contact information.</p>
+  	<p>Fill out the form to submit a request.</p>
+  	<form method="POST">
+      <div class="row">
+        <div class="six columns">
+          <label for="nameInput">Your name</label>
+          <input class="u-full-width" type="text" placeholder="Richard Hendricks" name="name">
+        </div>
+        <div class="six columns">
+          <label for="exampleEmailInput">Your email</label>
+          <input class="u-full-width" type="email" placeholder="test@mailbox.com" id="exampleEmailInput" name="email">
+        </div>
+      </div>
+      <div class="g-recaptcha" data-sitekey="6Le3rhoTAAAAAK6pdo1YQSXzhnv7TlLjqtcTOlHU"></div>
+      <p>We'll let you know once {{ .Name }} has either accepted or rejected your request.</p>
+      <input class="button-primary" type="submit" value="Submit">
+    </form>
+  </div>
+</div>
+{{ template "footer" . }}
+
+{{ end }}
