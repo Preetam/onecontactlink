@@ -96,7 +96,7 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get request link
-	requestLink, err := internalAPIClient.GetRequestLink(parts[1])
+	requestLink, err := internalAPIClient.GetRequestLinkByCode(parts[1])
 	if err != nil {
 		invalidLink()
 		return
