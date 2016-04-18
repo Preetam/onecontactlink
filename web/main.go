@@ -48,6 +48,8 @@ func main() {
 	service.Route("GET", "/r/:link", "serves contact requests", serveGetRequest)
 	service.Route("POST", "/r/:link", "serves contact submissions", servePostRequest)
 
+	service.Route("GET"/"/m/:link", "manages a request", serveManageRequest)
+
 	service.SetNotFound(http.FileServer(http.Dir(*staticDir)))
 	log.Println("static directory set to", *staticDir)
 	log.Println("listening on", *addr)

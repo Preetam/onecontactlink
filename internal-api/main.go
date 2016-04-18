@@ -74,9 +74,13 @@ func main() {
 
 	// Requests
 	service.Route("POST", "/requests", "creates a request", siesta.Compose(readRequest, createRequest))
+	service.Route("GET", "/requests/:id", "gets a request", getRequest)
+	service.Route("POST", "/requests/:id/sendEmail", "sends a request email to the user", sendRequestEmail)
+	service.Route("POST", "/requests/:id/manage", "approves or rejects a request", manageRequest)
 
 	// Links
-	service.Route("GET", "/links/requests/:requestLinkCode", "gets a request link", getRequestLink)
+	service.Route("GET", "/links/requestLinks/:requestLinkCode", "gets a request link", getRequestLinkByCode)
+	service.Route("GET", "/links/requests/:requestCode", "gets a request", getRequestByCode)
 
 	log.Println("listening on", *addr)
 	log.Fatal(http.ListenAndServe(*addr, service))

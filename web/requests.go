@@ -37,7 +37,7 @@ func serveGetRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get request link
-	requestLink, err := internalAPIClient.GetRequestLink(parts[1])
+	requestLink, err := internalAPIClient.GetRequestLinkByCode(parts[1])
 	if err != nil {
 		invalidLink()
 		return
@@ -189,13 +189,15 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 		fromUser = email.User
 	}
 
-	_, err = internalAPIClient.CreateRequest(fromUser, toUser)
+	requestID, err := internalAPIClient.CreateRequest(fromUser, toUser)
 	if err != nil {
 		if err == client.ErrConflict {
 			templ.ExecuteTemplate(w, "request", map[string]string{
 				"Name":    user.Name,
 				"Warning": "Looks like you already made this request.",
 			})
+			// Try to send another request email. This is idempotent.
+			internalAPIClient.SendRequestEmail(requestID)
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -205,8 +207,68 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	err = internalAPIClient.SendRequestEmail(requestID)
+	if err != nil {
+		templ.ExecuteTemplate(w, "request", map[string]string{
+			"Name":    user.Name,
+			"Warning": "Something went wrong. Please try again.",
+		})
+		return
+	}
 
 	templ.ExecuteTemplate(w, "success", map[string]string{
 		"Success": "Request sent!",
+	})
+}
+
+func serveManageRequest(w http.ResponseWriter, r *http.Request) {
+	params := &siesta.Params{}
+	linkStr := params.String("link", "", "link code")
+	actionStr := params.String("action", "", "action")
+	err := params.Parse(r.Form)
+
+	invalidLink := func() {
+		w.WriteHeader(http.StatusNotFound)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Not a valid link",
+		})
+		return
+	}
+
+	if err != nil || !strings.Contains(*linkStr, "-") {
+		invalidLink()
+		return
+	}
+	parts := strings.Split(*linkStr, "-")
+	if len(parts) != 2 {
+		invalidLink()
+		return
+	}
+
+	if *actionStr != "approve" || *actionStr != "reject" {
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Invalid action.",
+		})
+		return
+	}
+
+	// get request
+	request, err := internalAPIClient.GetRequestByCode(parts[1])
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	err = internalAPIClient.ManageRequest(request.ID, *actionStr)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+	templ.ExecuteTemplate(w, "success", map[string]string{
+		"Success": "Approved! We'll send them an email with your contact information.",
 	})
 }

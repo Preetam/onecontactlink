@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func getRequestLink(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+func getRequestLinkByCode(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 
 	var params siesta.Params

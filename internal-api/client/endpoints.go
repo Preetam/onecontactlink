@@ -50,12 +50,12 @@ func (c *Client) CreateRequest(fromUser, toUser int) (int, error) {
 	return request.ID, nil
 }
 
-func (c *Client) GetRequestLink(code string) (*schema.RequestLink, error) {
+func (c *Client) GetRequestLinkByCode(code string) (*schema.RequestLink, error) {
 	requestLink := schema.RequestLink{}
 	resp := middleware.APIResponse{
 		Data: &requestLink,
 	}
-	err := c.doRequest("GET", fmt.Sprintf("/links/requests/%s", code), nil, &resp)
+	err := c.doRequest("GET", fmt.Sprintf("/links/requestLinks/%s", code), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -105,4 +105,32 @@ func (c *Client) GetEmail(address string) (*schema.Email, error) {
 		return nil, err
 	}
 	return &email, nil
+}
+
+func (c *Client) SendRequestEmail(id int) error {
+	return c.doRequest("POST", fmt.Sprintf("/requests/%d/sendEmail", id), nil, nil)
+}
+
+func (c *Client) GetRequestByCode(code string) (*schema.Request, error) {
+	request := schema.Request{}
+	resp := middleware.APIResponse{
+		Data: &request,
+	}
+	err := c.doRequest("GET", fmt.Sprintf("/links/requests/%s", code), nil, &resp)
+	if err != nil {
+		if serverErr, ok := err.(ServerError); ok {
+			if serverErr == http.StatusNotFound {
+				return nil, ErrNotFound
+			}
+		}
+		return nil, err
+	}
+	return &request, nil
+}
+
+func (c *Client) ManageRequest(id int, action string) error {
+	if action != "approve" || action != "reject" {
+		return fmt.Errorf("client: invalid action")
+	}
+	return c.doRequest("POST", fmt.Sprintf("/requests/%d/manage?action=%s", id, action), nil, nil)
 }

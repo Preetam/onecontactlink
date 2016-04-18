@@ -7,6 +7,13 @@ const (
 	TokenSize           = 32
 )
 
+const (
+	RequestStatusDefault = iota
+	RequestStatusSent
+	RequestStatusApproved
+	RequestStatusRejected
+)
+
 type User struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
