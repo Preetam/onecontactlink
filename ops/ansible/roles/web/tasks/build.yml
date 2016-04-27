@@ -1,0 +1,14 @@
+---
+- hosts: web
+  remote_user: ubuntu
+  tasks:
+    - name: build web
+      command: go build
+      args:
+          chdir: /home/ubuntu/onecontactlink/web
+      environment:
+          GOPATH: /home/ubuntu/go
+      notify: restart web
+  handlers:
+    - name: restart web
+      command: sv restart /home/ubuntu/service/web

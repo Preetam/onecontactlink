@@ -1,0 +1,5 @@
+[digitalocean]
+104.131.168.95 ansible_python_interpreter=/usr/bin/python2.7
+
+[web]
+104.131.168.95 ansible_python_interpreter=/usr/bin/python2.7

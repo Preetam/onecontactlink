@@ -1,0 +1,18 @@
+---
+- name: create web service directory
+  file: path=/home/ubuntu/service/web state=directory
+
+- name: create web service log directory
+  file: path=/home/ubuntu/service/web/log/main state=directory
+
+- name: create web service run file
+  template:
+    src=../templates/web_run.j2
+    dest=/home/ubuntu/service/web/run
+    mode="u=rwx,g=rx,o=rx"
+
+- name: create web service log run file
+  template:
+    src=../templates/web_log_run.j2
+    dest=/home/ubuntu/service/web/log/run
+    mode="u=rwx,g=rx,o=rx"

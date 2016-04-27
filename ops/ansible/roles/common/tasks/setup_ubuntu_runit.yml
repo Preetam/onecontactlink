@@ -1,0 +1,17 @@
+---
+- name: create main runit service directory
+  file: path=/etc/service/runsvdir-ubuntu state=directory
+  become: yes
+
+- name: create user service directory
+  file: path=/home/ubuntu/service state=directory
+
+- name: create user service log directory
+  file: path=/home/ubuntu/service/log/main state=directory
+
+- name: create main runit service run file
+  template:
+    src=../templates/main_service_run.j2
+    dest=/etc/service/runsvdir-ubuntu/run
+    mode="u=rwx,g=rx,o=rx"
+  become: yes

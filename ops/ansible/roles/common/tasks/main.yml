@@ -1,0 +1,32 @@
+---
+
+- name: ensure traceroute is installed
+  apt: name=traceroute state=latest
+  become: yes
+
+- name: ensure git is installed
+  apt: name=git state=latest
+  become: yes
+
+- name: ensure runit is installed
+  apt: name=runit state=latest
+  become: yes
+
+- name: ensure go is installed
+  apt: name=golang-go state=latest
+  become: yes
+
+- name: create home go directory
+  file: path=/home/ubuntu/go state=directory
+
+- name: set GOPATH
+  lineinfile: "dest=/home/ubuntu/.bashrc line='export GOPATH=$HOME/go'"
+
+- name: add GOPATH bin to PATH
+  lineinfile: "dest=/home/ubuntu/.bashrc line='export PATH=$PATH:$HOME/go/bin'"
+
+- stat: path=/etc/service/runsvdir-ubuntu
+  register: service_runsvdir
+
+- include: setup_ubuntu_runit.yml
+  when: service_runsvdir.stat.exists == False

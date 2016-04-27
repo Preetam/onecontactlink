@@ -1,0 +1,18 @@
+---
+- name: get Caddy
+  get_url:
+    url="https://caddyserver.com/download/build?os=linux&arch=amd64&features="
+    dest="/tmp/caddy.tar.gz"
+  register: downloaded_caddy
+- name: install Caddy
+  unarchive:
+    src="/tmp/caddy.tar.gz"
+    dest="/usr/local/bin"
+    copy=no
+  when: downloaded_caddy
+  register: installed_caddy
+  become: yes
+- name: allow Caddy to bind to lower ports without superuser priv
+  command: setcap cap_net_bind_service=+ep /usr/local/bin/caddy
+  when: installed_caddy
+  become: yes
