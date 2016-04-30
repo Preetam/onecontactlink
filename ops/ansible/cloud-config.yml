@@ -1,0 +1,12 @@
+#cloud-config
+packages:
+ - python2.7
+
+users:
+ - name: ubuntu
+   groups: sudo
+   shell: /bin/bash
+   sudo: ['ALL=(ALL) NOPASSWD:ALL']
+   ssh-authorized-keys:
+     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDcgURSKun5qVd/RMokB1U3KpqfWy4JB5bBwDunoxJ9jeTPOt/wAb8UgkfVUUoy6ZsgRIPAepqIPMW8GwtTE/YEbMZA0Pp5fnkvfL89EUCGfjMsxG9fheREkmO/N3KVBQGtDirMBNcIJ1/ba0aoAVrwkyylcHsXkIloTw92cm+s6v9kOk5XlmlIPI1kSG+TTwchqzMe769viWcxzZRhBCcjnc6xVay/Cp/+rNk32EreRQVaCONEzqx2r4JjdaEvAvRS5YXPDHZKJ6W2v1bi9/mFwSYThRwxflG75JpMoKVnWNquuuakv1vNAaPLr1Z0fXJHe9EuNCbZrUXJ9P3sepFJ
+     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8/sbyurrrV1D/PgFhD3Ui15bHCpw/8VI0Nb+VikPUisEHwq07YGt+M3vYiyayFs2BpfAhb3Ton/lFf6uOc2XW1oJqRinHeknhtAEm3MjRKIw3OhWZN1cF1Y2ZQwJClOMBWQW77LawWQOpWjMcXPbp0GbCZ4S7cJRGIgef4zxJA3KDbG/k3ytYkg3Gf2C2W7lWE2a3NNMz9CftxLDNXzzgHxGprBZNHKPqLhdvOstuyzPkq+OeVX0Z49p1P6isZgmbyfQ2q5njUnaseDrg2POyTskspdwCLhSV+OI5kORqwoD/J5lLcl1Ma1tR3h+kWEhew4GNMhn+NV/ejdqfuFpv

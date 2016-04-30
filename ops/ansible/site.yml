@@ -1,0 +1,8 @@
+---
+- hosts: all
+  remote_user: ubuntu
+  roles:
+    - common
+
+- include: webservers.yml
+- include: dbs.yml

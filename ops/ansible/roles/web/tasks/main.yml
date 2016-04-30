@@ -1,0 +1,32 @@
+---
+
+- stat: path=/usr/local/caddy
+  register: caddy_bin
+
+- include: install_caddy.yml
+  when: caddy_bin.stat.exists == False
+
+- name: go get project
+  shell: go get github.com/Preetam/onecontactlink || true
+  environment:
+    GOPATH: /home/ubuntu/go
+
+- stat: path=/home/ubuntu/onecontactlink
+  register: home_onecontactlink
+
+- name: add Go project symlink
+  file:
+    src=/home/ubuntu/go/src/github.com/Preetam/onecontactlink
+    dest=/home/ubuntu/onecontactlink
+    state=link
+  when: home_onecontactlink.stat.exists == False
+
+- name: add Go project dependencies
+  command: go get ./...
+  args:
+    chdir: /home/ubuntu/onecontactlink
+  environment:
+    GOPATH: /home/ubuntu/go
+
+- name: setup web service
+  include: service.yml
