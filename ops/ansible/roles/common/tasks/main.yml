@@ -16,6 +16,10 @@
   apt: name=golang-go state=latest
   become: yes
 
+- name: install python mysql module
+  apt: name=python-mysqldb state=latest
+  become: yes
+
 - name: create home go directory
   file: path=/home/ubuntu/go state=directory
 

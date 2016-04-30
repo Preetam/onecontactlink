@@ -9,6 +9,24 @@
       environment:
           GOPATH: /home/ubuntu/go
       notify: restart web
+    - name: build api
+      command: go build
+      args:
+          chdir: /home/ubuntu/onecontactlink/api
+      environment:
+          GOPATH: /home/ubuntu/go
+      notify: restart api
+    - name: build internal-api
+      command: go build
+      args:
+          chdir: /home/ubuntu/onecontactlink/internal-api
+      environment:
+          GOPATH: /home/ubuntu/go
+      notify: restart internal-api
   handlers:
     - name: restart web
       command: sv restart /home/ubuntu/service/web
+    - name: restart api
+      command: sv restart /home/ubuntu/service/api
+    - name: restart internal-api
+      command: sv restart /home/ubuntu/service/internal-api

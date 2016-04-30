@@ -1,5 +1,8 @@
 [digitalocean]
-104.131.168.95 ansible_python_interpreter=/usr/bin/python2.7
+s-01.nyc3.onecontact.link ansible_python_interpreter=/usr/bin/python2.7
 
 [web]
-104.131.168.95 ansible_python_interpreter=/usr/bin/python2.7
+s-01.nyc3.onecontact.link
+
+[db]
+s-01.nyc3.onecontact.link

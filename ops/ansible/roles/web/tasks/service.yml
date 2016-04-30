@@ -16,3 +16,51 @@
     src=../templates/web_log_run.j2
     dest=/home/ubuntu/service/web/log/run
     mode="u=rwx,g=rx,o=rx"
+
+- name: create internal API service directory
+  file: path=/home/ubuntu/service/internal-api state=directory
+
+- name: create internal API service log directory
+  file: path=/home/ubuntu/service/internal-api/log/main state=directory
+
+- name: create internal API service run file
+  template:
+    src=../templates/internal_api_run.j2
+    dest=/home/ubuntu/service/internal-api/run
+    mode="u=rwx,g=rx,o=rx"
+
+- name: create internal API service log run file
+  template:
+    src=../templates/web_log_run.j2
+    dest=/home/ubuntu/service/internal-api/log/run
+    mode="u=rwx,g=rx,o=rx"
+
+- name: create API service directory
+  file: path=/home/ubuntu/service/api state=directory
+
+- name: create API service log directory
+  file: path=/home/ubuntu/service/api/log/main state=directory
+
+- name: create API service run file
+  template:
+    src=../templates/api_run.j2
+    dest=/home/ubuntu/service/api/run
+    mode="u=rwx,g=rx,o=rx"
+
+- name: create API service log run file
+  template:
+    src=../templates/web_log_run.j2
+    dest=/home/ubuntu/service/api/log/run
+    mode="u=rwx,g=rx,o=rx"
+
+- name: create proxy service directory
+  file: path=/home/ubuntu/service/proxy state=directory
+
+- name: copy Caddyfile
+  template: src=../templates/Caddyfile.j2 dest=/home/ubuntu/service/proxy/Caddyfile
+
+- name: create proxy service run file
+  template:
+    src=../templates/proxy_run.j2
+    dest=/home/ubuntu/service/proxy/run
+    mode="u=rwx,g=rx,o=rx"

@@ -1,2 +1,6 @@
 #!/bin/sh
-exec /home/ubuntu/onecontactlink/web/web -static-dir='/home/ubuntu/onecontactlink/web/static' -templates-dir='/home/ubuntu/onecontactlink/web/templates' --recaptcha-secret="{{recaptcha_secret}}" 2>&1
+exec /home/ubuntu/onecontactlink/web/web \
+  -addr='localhost:4003' \
+  -static-dir='/home/ubuntu/onecontactlink/web/static' \
+  -templates-dir='/home/ubuntu/onecontactlink/web/templates' \
+  -recaptcha-secret="{{recaptcha_secret}}" 2>&1

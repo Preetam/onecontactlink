@@ -1,0 +1,49 @@
+---
+
+- name: install MySQL
+  apt: name=mysql-server state=latest
+  become: yes
+
+- name: set MySQL root password
+  mysql_user:
+      name: root
+      password: "{{ mysql_root_password }}"
+      check_implicit_admin: True
+  become: yes
+
+- name: "create .my.cnf"
+  template:
+      src: ../templates/root.my.cnf.j2
+      dest: /root/.my.cnf
+      mode: 0600
+  become: yes
+
+- name: create onecontactlink database
+  mysql_db:
+      name: onecontactlink
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+  become: yes
+
+- name: create app user
+  mysql_user:
+      name: app
+      password: "{{ mysql_app_password }}"
+      priv: "onecontactlink.*:ALL"
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+  become: yes
+
+- name: create dba user
+  mysql_user:
+      name: dba
+      host: "%"
+      password: "{{ mysql_dba_password }}"
+      priv: "*.*:ALL"
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+  become: yes
+
+- name: create server certificates
+  command: mysql_ssl_rsa_setup
+  become: yes

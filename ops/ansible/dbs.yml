@@ -1,0 +1,6 @@
+---
+- hosts: db
+  remote_user: ubuntu
+  roles:
+    - common
+    - db
