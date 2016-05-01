@@ -84,6 +84,7 @@ CREATE TABLE `requests` (
   `from_user` int(10) NOT NULL DEFAULT '0',
   `to_user` int(10) NOT NULL DEFAULT '0',
   `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `email_sent` int(10) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL,
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
@@ -113,7 +114,7 @@ CREATE TABLE `schema_version` (
   `version` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ts` int(10) unsigned NOT NULL,
   PRIMARY KEY (`version`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -122,7 +123,7 @@ CREATE TABLE `schema_version` (
 
 LOCK TABLES `schema_version` WRITE;
 /*!40000 ALTER TABLE `schema_version` DISABLE KEYS */;
-INSERT INTO `schema_version` VALUES (1,1460952652);
+INSERT INTO `schema_version` VALUES (1,1462074685),(2,1462074685);
 /*!40000 ALTER TABLE `schema_version` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -195,4 +196,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-04-18  0:10:59
+-- Dump completed on 2016-04-30 23:52:04
