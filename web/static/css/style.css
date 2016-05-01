@@ -35,10 +35,8 @@ body {
 }
 
 .message-bubble {
-  min-height: 3rem;
-  min-width: 3rem;
   border-radius: 4px;
-  padding: 40px;
+  padding: 0.8em;
   text-align: center;
   margin: 0.25em;
 }
