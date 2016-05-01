@@ -2,6 +2,10 @@
 - hosts: web
   remote_user: ubuntu
   tasks:
+    - name: update repository
+      command: git pull
+      args:
+          chdir: /home/ubuntu/onecontactlink
     - name: build web
       command: go build
       args:
