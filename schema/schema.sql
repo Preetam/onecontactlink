@@ -41,6 +41,7 @@ CREATE TABLE `requests` (
   `from_user` int(10) NOT NULL DEFAULT '0',
   `to_user` int(10) NOT NULL DEFAULT '0',
   `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `email_sent` int(10) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL,
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
@@ -67,4 +68,5 @@ CREATE TABLE `schema_version` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `schema_version` VALUES
-  (1, UNIX_TIMESTAMP());
+  (1, UNIX_TIMESTAMP())
+ ,(2, UNIX_TIMESTAMP());
