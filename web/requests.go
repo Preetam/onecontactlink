@@ -89,7 +89,7 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 
 	if *recaptchaResponse == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
+		templ.ExecuteTemplate(w, "request", map[string]string{
 			"Error": "Bad CAPTCHA",
 		})
 		return
@@ -106,7 +106,7 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 	user, err := internalAPIClient.GetUser(requestLink.User)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
+		templ.ExecuteTemplate(w, "request", map[string]string{
 			"Error": "Something went wrong",
 		})
 		return
@@ -154,8 +154,8 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	if !recaptchaAPIResponse.Success {
 		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
-			"Error": "Couldn't verify CAPTCHA",
+		templ.ExecuteTemplate(w, "request", map[string]string{
+			"Error": "Couldn't verify CAPTCHA. Please try again.",
 		})
 		return
 	}
@@ -193,8 +193,9 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == client.ErrConflict {
 			templ.ExecuteTemplate(w, "request", map[string]string{
-				"Name":    user.Name,
-				"Warning": "Looks like you already made this request.",
+				"Name": user.Name,
+				"Info": "Looks like you already made this request. If " + user.Name +
+					" has already approved your request, we'll send you their latest contact info.",
 			})
 			// Try to send another request email. This is idempotent.
 			internalAPIClient.SendRequestEmail(requestID)
