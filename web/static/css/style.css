@@ -38,8 +38,7 @@ body {
   min-height: 3rem;
   min-width: 3rem;
   border-radius: 4px;
-  padding: 0 40px;
-  line-height: 40px;
+  padding: 40px;
   text-align: center;
   margin: 0.25em;
 }
