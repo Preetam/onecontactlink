@@ -16,7 +16,7 @@ var (
 )
 
 func main() {
-	addr := flag.String("addr", ":4002", "Listen address")
+	addr := flag.String("addr", "localhost:4002", "Listen address")
 	flag.StringVar(&InternalAPIEndpoint, "internal-api", InternalAPIEndpoint,
 		"Base URI to the internal API")
 	flag.Parse()

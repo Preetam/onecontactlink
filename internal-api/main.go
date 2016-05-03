@@ -25,7 +25,7 @@ const (
 )
 
 func main() {
-	addr := flag.String("addr", ":4001", "Listen address")
+	addr := flag.String("addr", "localhost:4001", "Listen address")
 	flag.StringVar(&DSN, "db-dsn", DSN, "MySQL dsn")
 	flag.StringVar(&MailgunDomain, "mailgun-domain", MailgunDomain, "Mailgun domain")
 	flag.StringVar(&MailgunKey, "mailgun-key", MailgunKey, "Mailgun private key")

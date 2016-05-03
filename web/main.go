@@ -22,7 +22,7 @@ var (
 )
 
 func main() {
-	addr := flag.String("addr", ":4003", "Listen address")
+	addr := flag.String("addr", "localhost:4003", "Listen address")
 	staticDir := flag.String("static-dir", "./static", "Path to static content")
 	templatesDir := flag.String("templates-dir", "./templates", "Path to templates")
 	internalAPIURL := flag.String("internal-api", "http://localhost:4001/v1", "internal API URL")
