@@ -34,3 +34,9 @@
 
 - include: setup_ubuntu_runit.yml
   when: service_runsvdir.stat.exists == False
+
+- name: copy internal root cert
+  template:
+    src=../templates/root_cert.j2
+    dest=/etc/ssl/certs/internal_root.pem
+  become: yes
