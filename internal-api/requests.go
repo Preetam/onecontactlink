@@ -204,6 +204,22 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	status := 0
+	// Check if an email has already been sent
+	err = requestData.DB.QueryRow("SELECT status FROM requests WHERE id = ?", *requestID).Scan(&status)
+	if err != nil {
+		requestData.StatusCode = http.StatusNotModified
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	if status >= schema.RequestStatusSent {
+		// Email has already been sent. Nothing else to do.
+		requestData.StatusCode = http.StatusNotModified
+		return
+	}
+
 	receiverName := ""
 	receiverEmail := ""
 	receiverCode := ""
