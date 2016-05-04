@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/mailgun/mailgun-go"
@@ -248,9 +249,13 @@ Reject:
 Cheers!
 https://www.onecontact.link/
 `, receiverName, senderName, senderEmail, approveLink, rejectLink)
-	//msg := c.Get(messageKey).(client.EmailMessage)
-	_, _, err = mg.Send(mailgun.NewMessage("\"OneContactLink Notifications\" <notify@out.onecontact.link>",
-		"OneContactLink request", messageContent, receiverEmail))
+	msg := client.EmailMessage{
+		From:    `"OneContactLink Notifications" <notify@out.onecontact.link>`,
+		To:      receiverEmail,
+		Subject: "OneContactLink request",
+		Content: messageContent,
+	}
+	err = sendMail(mg, msg)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = "couldn't send email"
@@ -269,7 +274,6 @@ https://www.onecontact.link/
 }
 
 func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-	mg := c.Get(MailgunContextKey).(mailgun.Mailgun)
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 
 	var params siesta.Params
@@ -304,7 +308,7 @@ func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	// Check if the status has already been set
 	err = tx.QueryRow("SELECT status FROM requests WHERE id = ?", *requestID).Scan(&status)
 	if err != nil {
-		requestData.StatusCode = http.StatusInternalServerError
+		requestData.StatusCode = http.StatusNotModified
 		requestData.ResponseError = err.Error()
 		log.Printf("[Req %s] %v", requestData.RequestID, err)
 		return
@@ -331,48 +335,95 @@ func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+}
+
+func sendContactInfoMail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	mg := c.Get(MailgunContextKey).(mailgun.Mailgun)
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+
+	var params siesta.Params
+	requestID := params.Int("id", 0, "Request ID")
+	err := params.Parse(r.Form)
+	if err != nil {
+		requestData.StatusCode = http.StatusBadRequest
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	status := 0
+	emailSentTs := 0
+	err = requestData.DB.QueryRow("SELECT status, email_sent FROM requests WHERE id = ?", *requestID).
+		Scan(&status, &emailSentTs)
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	if status != schema.RequestStatusApproved {
+		// Request has not been approved
+		requestData.StatusCode = http.StatusPreconditionFailed
+		return
+	}
+
+	if time.Now().Unix()-int64(emailSentTs) < 86400 {
+		// Less than a day since the last contact info email was sent
+		requestData.StatusCode = http.StatusTooManyRequests
+		return
+	}
+
 	receiverName := ""
 	receiverEmail := ""
 	requestedName := ""
 	requestedEmail := ""
+	err = requestData.DB.QueryRow("SELECT u1.name AS from_name,"+
+		" e1.address as from_address,"+
+		" u2.name as to_name,"+
+		" e2.address as to_address"+
+		" FROM requests"+
+		" JOIN users u1 ON u1.id = from_user"+
+		" JOIN users u2 ON u2.id = to_user"+
+		" JOIN emails e1 ON u1.main_email = e1.id"+
+		" JOIN emails e2 ON u2.main_email = e2.id"+
+		" WHERE requests.id = ?", *requestID).
+		Scan(&receiverName, &receiverEmail, &requestedName, &requestedEmail)
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
 
-	if status == schema.RequestStatusApproved {
-		err = tx.QueryRow("SELECT u1.name AS from_name,"+
-			" e1.address as from_address,"+
-			" u2.name as to_name,"+
-			" e2.address as to_address"+
-			" FROM requests"+
-			" JOIN users u1 ON u1.id = from_user"+
-			" JOIN users u2 ON u2.id = to_user"+
-			" JOIN emails e1 ON u1.main_email = e1.id"+
-			" JOIN emails e2 ON u2.main_email = e2.id"+
-			" WHERE requests.id = ?", *requestID).
-			Scan(&receiverName, &receiverEmail, &requestedName, &requestedEmail)
-		if err != nil {
-			requestData.StatusCode = http.StatusInternalServerError
-			requestData.ResponseError = err.Error()
-			log.Printf("[Req %s] %v", requestData.RequestID, err)
-			return
-		}
-
-		messageContent := fmt.Sprintf(`Hi %s,
-
+	messageContent := fmt.Sprintf(`Hi %s,
 %s has approved your contact request! You can reach them at %s.
 
 Cheers!
 https://www.onecontact.link/
 `, receiverName, requestedName, requestedEmail)
-		_, _, err = mg.Send(mailgun.NewMessage("\"OneContactLink Notifications\" <notify@out.onecontact.link>",
-			"OneContactLink request", messageContent, receiverEmail))
-		if err != nil {
-			requestData.StatusCode = http.StatusInternalServerError
-			requestData.ResponseError = err.Error()
-			log.Printf("[Req %s] %v", requestData.RequestID, err)
-			return
-		}
+	err = sendMail(mg, client.EmailMessage{
+		From:    `OneContactLink Notifications" <notify@out.onecontact.link>`,
+		To:      receiverEmail,
+		Subject: requestedName + "'s contact information via OneContactLink",
+		Content: messageContent,
+	})
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
 	}
 
-	err = tx.Commit()
+	_, err = requestData.DB.Exec("UPDATE requests SET email_sent = UNIX_TIMESTAMP() WHERE id = ?",
+		*requestID)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()

@@ -68,5 +68,4 @@ CREATE TABLE `schema_version` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `schema_version` VALUES
-  (1, UNIX_TIMESTAMP())
- ,(2, UNIX_TIMESTAMP());
+  (1, UNIX_TIMESTAMP());

@@ -38,17 +38,19 @@ func main() {
 	internalAPIClient = internalClient.New(*internalAPIURL)
 
 	service := siesta.NewService("/")
-	service.DisableTrimSlash()
+	service.DisableTrimSlash() // required for static file handler
 	service.AddPre(middleware.RequestIdentifier)
 
 	service.Route("GET", "/", "serves index", func(w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "index", nil)
 	})
 
-	service.Route("GET", "/r/:link", "serves contact requests", serveGetRequest)
-	service.Route("POST", "/r/:link", "serves contact submissions", servePostRequest)
+	// contact link pages
+	service.Route("GET", "/r/:link", "handles contact request page", serveGetRequest)
+	service.Route("POST", "/r/:link", "handles contact request submission", servePostRequest)
 
-	service.Route("GET", "/m/:link", "manages a request", serveManageRequest)
+	// manage link
+	service.Route("GET", "/m/:link", "handles request management page", serveManageRequest)
 
 	service.SetNotFound(http.FileServer(http.Dir(*staticDir)))
 	log.Println("static directory set to", *staticDir)

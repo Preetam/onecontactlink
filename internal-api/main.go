@@ -62,8 +62,9 @@ func main() {
 			requestData.StatusCode = http.StatusNoContent
 		})
 
-	service.Route("GET", "/tokens/:token", "usage", getToken)
-	service.Route("POST", "/misc/sendMail", "usage", siesta.Compose(emailMessageReader, sendEmail))
+	service.Route("GET", "/tokens/:token", "gets a token", getToken)
+	service.Route("POST", "/misc/sendMail", "sends an email",
+		siesta.Compose(emailMessageReader, sendEmailHandler))
 
 	// Users
 	service.Route("GET", "/users/:id", "gets a user", getUserByID)
@@ -75,7 +76,8 @@ func main() {
 	// Requests
 	service.Route("POST", "/requests", "creates a request", siesta.Compose(readRequest, createRequest))
 	service.Route("GET", "/requests/:id", "gets a request", getRequest)
-	service.Route("POST", "/requests/:id/sendEmail", "sends a request email to the user", sendRequestEmail)
+	service.Route("POST", "/requests/:id/sendRequestEmail", "sends a request email to the user", sendRequestEmail)
+	service.Route("POST", "/requests/:id/sendContactInfoEmail", "sends a contact info email to the requester", sendContactInfoMail)
 	service.Route("POST", "/requests/:id/manage", "approves or rejects a request", manageRequest)
 
 	// Links

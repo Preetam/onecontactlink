@@ -111,7 +111,11 @@ func (c *Client) GetEmail(address string) (*schema.Email, error) {
 }
 
 func (c *Client) SendRequestEmail(id int) error {
-	return c.doRequest("POST", fmt.Sprintf("/requests/%d/sendEmail", id), nil, nil)
+	return c.doRequest("POST", fmt.Sprintf("/requests/%d/sendRequestEmail", id), nil, nil)
+}
+
+func (c *Client) SendContactInfoEmail(id int) error {
+	return c.doRequest("POST", fmt.Sprintf("/requests/%d/sendContactInfoEmail", id), nil, nil)
 }
 
 func (c *Client) GetRequestByCode(code string) (*schema.Request, error) {

@@ -199,6 +199,7 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 			})
 			// Try to send another request email. This is idempotent.
 			internalAPIClient.SendRequestEmail(requestID)
+			internalAPIClient.SendContactInfoEmail(requestID)
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -263,12 +264,32 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 
 	err = internalAPIClient.ManageRequest(request.ID, *actionStr)
 	if err != nil {
+		fine := false
+		if serverErr, ok := err.(client.ServerError); ok {
+			if int(serverErr) == http.StatusNotModified {
+				// Nothing to do. This is fine.
+				fine = true
+			}
+		}
+
+		if !fine {
+			w.WriteHeader(http.StatusInternalServerError)
+			templ.ExecuteTemplate(w, "invalid", map[string]string{
+				"Error": "Something went wrong. Please try again.",
+			})
+			return
+		}
+	}
+
+	err = internalAPIClient.SendContactInfoEmail(request.ID)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
 		return
 	}
+
 	templ.ExecuteTemplate(w, "success", map[string]string{
 		"Success": "Approved! We'll send them an email with your contact information.",
 	})

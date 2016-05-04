@@ -31,12 +31,12 @@ func emailMessageReader(c siesta.Context, w http.ResponseWriter, r *http.Request
 	}
 }
 
-func sendEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+func sendEmailHandler(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	mg := c.Get(MailgunContextKey).(mailgun.Mailgun)
 	msg := c.Get(messageKey).(client.EmailMessage)
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 
-	_, _, err := mg.Send(mailgun.NewMessage(msg.From, msg.Subject, msg.Content, msg.To))
+	err := sendMail(mg, msg)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
@@ -45,4 +45,9 @@ func sendEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	requestData.StatusCode = http.StatusNoContent
+}
+
+func sendMail(mg mailgun.Mailgun, msg client.EmailMessage) error {
+	_, _, err := mg.Send(mailgun.NewMessage(msg.From, msg.Subject, msg.Content, msg.To))
+	return err
 }
