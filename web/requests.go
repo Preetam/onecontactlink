@@ -264,22 +264,24 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 
 	err = internalAPIClient.ManageRequest(request.ID, *actionStr)
 	if err != nil {
-		fine := false
 		if serverErr, ok := err.(client.ServerError); ok {
-			if int(serverErr) == http.StatusNotModified {
-				// Nothing to do. This is fine.
-				fine = true
+			if int(serverErr) == http.StatusConflict {
+				w.WriteHeader(http.StatusNotModified)
+				templ.ExecuteTemplate(w, "invalid", map[string]string{
+					"Warning": "Oops, you already responded to this request. We can't change" +
+						" anything right now.",
+				})
+				return
 			}
 		}
 
-		if !fine {
-			w.WriteHeader(http.StatusInternalServerError)
-			templ.ExecuteTemplate(w, "invalid", map[string]string{
-				"Error": "Something went wrong. Please try again.",
-			})
-			log.Println(err)
-			return
-		}
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		log.Println(err)
+		return
+
 	}
 
 	err = internalAPIClient.SendContactInfoEmail(request.ID)
