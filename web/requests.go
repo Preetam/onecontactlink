@@ -266,7 +266,6 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if serverErr, ok := err.(client.ServerError); ok {
 			if int(serverErr) == http.StatusConflict {
-				w.WriteHeader(http.StatusNotModified)
 				templ.ExecuteTemplate(w, "invalid", map[string]string{
 					"Warning": "Oops, you already responded to this request. We can't change" +
 						" anything right now.",
