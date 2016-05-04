@@ -60,6 +60,11 @@ func (c *Client) doRequest(verb string, address string, body, response interface
 
 	if res.StatusCode/100 != 2 {
 		// Not a 2xx status code
+		// Try to send a response back if we have something.
+		if response != nil {
+			json.NewDecoder(res.Body).Decode(response)
+			// Ignore errors
+		}
 		return ServerError(res.StatusCode)
 	}
 
