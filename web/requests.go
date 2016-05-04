@@ -2,15 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"log"
+	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/schema"
 
 	"github.com/VividCortex/siesta"
-
-	"net/http"
-	"net/url"
-	"strings"
 )
 
 func serveGetRequest(w http.ResponseWriter, r *http.Request) {
@@ -277,6 +277,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 			templ.ExecuteTemplate(w, "invalid", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
+			log.Println(err)
 			return
 		}
 	}
@@ -287,6 +288,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
+		log.Println(err)
 		return
 	}
 
