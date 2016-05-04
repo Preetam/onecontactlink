@@ -410,7 +410,7 @@ Cheers!
 https://www.onecontact.link/
 `, receiverName, requestedName, requestedEmail)
 	err = sendMail(mg, client.EmailMessage{
-		From:    `OneContactLink Notifications" <notify@out.onecontact.link>`,
+		From:    `"OneContactLink Notifications" <notify@out.onecontact.link>`,
 		To:      receiverEmail,
 		Subject: requestedName + "'s contact information via OneContactLink",
 		Content: messageContent,
