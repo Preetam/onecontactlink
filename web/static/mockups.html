@@ -28,7 +28,7 @@
   <!-- Primary Page Layout
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <div class="container">
-    <div class="row" style="margin-top: 10%">
+    <div class="row">
       <div class="one-half column">
       <h1 class='brand'><a href='#'>OneContact.Link</a></h1>
       </div>
@@ -52,7 +52,7 @@
 
     <div class="row">
       <div class="twelve columns">
-        <h2>Sign up</h2>
+        <div class="row"><h2>Sign up</h2></div>
         <form>
           <div class="row">
             <div class="six columns">
@@ -64,8 +64,10 @@
               <input class="u-full-width" type="email" placeholder="test@mailbox.com" id="exampleEmailInput">
             </div>
           </div>
-          <div class="g-recaptcha" data-sitekey="6Le3rhoTAAAAAK6pdo1YQSXzhnv7TlLjqtcTOlHU"></div>
-          <input class="button-primary" type="submit" value="Submit" style="margin-top: 1rem;">
+          <div class="row">
+              <div class="g-recaptcha" data-sitekey="6Le3rhoTAAAAAK6pdo1YQSXzhnv7TlLjqtcTOlHU"></div>
+              <input class="button-primary" type="submit" value="Submit" style="margin-top: 1rem;">
+          </div>
         </form>
       </div>
     </div>
@@ -170,10 +172,15 @@
         </div>
       </div>
     </div>
-
-    <hr />
   </div>
 
+  <div class="footer">
+    <p>
+        Copyright &copy; 2016 OneContact.Link.
+        <br/>
+        We're <a href="https://github.com/Preetam/onecontactlink">open source</a>!
+    </p>
+  </div>
 <!-- End Document
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 </body>
