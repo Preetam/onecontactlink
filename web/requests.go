@@ -9,6 +9,7 @@ import (
 
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/schema"
+	"github.com/Preetam/onecontactlink/web/linktoken"
 
 	"github.com/VividCortex/siesta"
 )
@@ -225,7 +226,7 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 
 func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 	params := &siesta.Params{}
-	linkStr := params.String("link", "", "link code")
+	linkStr := params.String("link", "", "link token")
 	actionStr := params.String("action", "", "action")
 	err := params.Parse(r.Form)
 
@@ -255,12 +256,8 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get request
-	request, err := internalAPIClient.GetRequestByCode(parts[1])
-	if err != nil {
-		invalidLink()
-		return
-	}
+	// extract request ID
+	linktoken.NewLinkToken(data map[string]interface{}, expires int)
 
 	err = internalAPIClient.ManageRequest(request.ID, *actionStr)
 	if err != nil {
