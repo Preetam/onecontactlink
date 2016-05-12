@@ -372,7 +372,7 @@ func sendContactInfoMail(c siesta.Context, w http.ResponseWriter, r *http.Reques
 
 	if status != schema.RequestStatusApproved {
 		// Request has not been approved
-		requestData.StatusCode = http.StatusPreconditionFailed
+		requestData.StatusCode = http.StatusForbidden
 		return
 	}
 
