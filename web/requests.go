@@ -285,17 +285,23 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	err = internalAPIClient.SendContactInfoEmail(requestID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
-			"Error": "Something went wrong. Please try again.",
-		})
-		log.Println(err)
-		return
-	}
+	if *actionStr == "approve" {
+		err = internalAPIClient.SendContactInfoEmail(requestID)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			templ.ExecuteTemplate(w, "invalid", map[string]string{
+				"Error": "Something went wrong. Please try again.",
+			})
+			log.Println(err)
+			return
+		}
 
-	templ.ExecuteTemplate(w, "success", map[string]string{
-		"Success": "Approved! We'll send them an email with your contact information.",
-	})
+		templ.ExecuteTemplate(w, "success", map[string]string{
+			"Success": "Approved! We'll send them an email with your contact information.",
+		})
+	} else {
+		templ.ExecuteTemplate(w, "success", map[string]string{
+			"Success": "Rejected. That email won't be able to send you any more requests.",
+		})
+	}
 }
