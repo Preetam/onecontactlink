@@ -17,11 +17,15 @@
           <input class="u-full-width" type="email" placeholder="test@mailbox.com" id="exampleEmailInput" name="email">
         </div>
       </div>
-      <div class="g-recaptcha" data-sitekey="6Le3rhoTAAAAAK6pdo1YQSXzhnv7TlLjqtcTOlHU"
-        style="margin-bottom: 1em">
+      <div class="row">
+        <div class="twelve columns">
+          <div class="g-recaptcha" data-sitekey="6Le3rhoTAAAAAK6pdo1YQSXzhnv7TlLjqtcTOlHU"
+            style="margin-bottom: 1em">
+          </div>
+          <p>We'll let you know once {{ .Name }} has either accepted or rejected your request.</p>
+          <input class="button-primary" type="submit" value="Submit">
+        </div>
       </div>
-      <p>We'll let you know once {{ .Name }} has either accepted or rejected your request.</p>
-      <input class="button-primary" type="submit" value="Submit">
     </form>
   </div>
 </div>
