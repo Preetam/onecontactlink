@@ -378,7 +378,7 @@ func sendContactInfoMail(c siesta.Context, w http.ResponseWriter, r *http.Reques
 
 	if time.Now().Unix()-int64(emailSentTs) < 86400 {
 		// Less than a day since the last contact info email was sent
-		requestData.StatusCode = http.StatusTooManyRequests
+		requestData.StatusCode = http.StatusBadRequest
 		return
 	}
 
