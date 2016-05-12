@@ -1,8 +1,6 @@
 package middleware
 
-import (
-	"database/sql"
-)
+import "database/sql"
 
 type RequestData struct {
 	RequestID     string

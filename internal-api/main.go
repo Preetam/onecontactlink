@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/web/linktoken"
 
 	"github.com/VividCortex/siesta"
 	_ "github.com/go-sql-driver/mysql"
@@ -18,6 +19,9 @@ var (
 	MailgunDomain = "samples.mailgun.org"
 	MailgunKey    = "key-CHANGETHIS"
 	MailgunPubKey = ""
+	TokenKey      = ""
+
+	tokenCodec *linktoken.TokenCodec
 )
 
 const (
@@ -30,6 +34,7 @@ func main() {
 	flag.StringVar(&MailgunDomain, "mailgun-domain", MailgunDomain, "Mailgun domain")
 	flag.StringVar(&MailgunKey, "mailgun-key", MailgunKey, "Mailgun private key")
 	flag.StringVar(&MailgunPubKey, "mailgun-pubkey", MailgunPubKey, "Mailgun public key")
+	flag.StringVar(&TokenKey, "token-key", TokenKey, "Token key")
 	flag.Parse()
 
 	db, err := sql.Open("mysql", DSN)
@@ -37,6 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 	mg := mailgun.NewMailgun(MailgunDomain, MailgunKey, MailgunPubKey)
+	tokenCodec = linktoken.NewTokenCodec(1, TokenKey)
 
 	service := siesta.NewService("/v1")
 	service.AddPre(middleware.RequestIdentifier)
@@ -82,7 +88,6 @@ func main() {
 
 	// Links
 	service.Route("GET", "/links/requestLinks/:requestLinkCode", "gets a request link", getRequestLinkByCode)
-	service.Route("GET", "/links/requests/:requestCode", "gets a request", getRequestByCode)
 
 	log.Println("listening on", *addr)
 	log.Fatal(http.ListenAndServe(*addr, service))

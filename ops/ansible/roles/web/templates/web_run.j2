@@ -3,4 +3,5 @@ exec /home/ubuntu/onecontactlink/web/web \
   -addr='localhost:4003' \
   -static-dir='/home/ubuntu/onecontactlink/web/static' \
   -templates-dir='/home/ubuntu/onecontactlink/web/templates' \
-  -recaptcha-secret="{{recaptcha_secret}}" 2>&1
+  -recaptcha-secret="{{recaptcha_secret}}" \
+  -token-key='{{link_token_key}}' 2>&1

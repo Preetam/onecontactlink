@@ -3,4 +3,5 @@ exec /home/ubuntu/onecontactlink/internal-api/internal-api \
   -addr="localhost:4001" \
   -db-dsn='{{db_dsn}}' \
   -mailgun-domain='out.onecontact.link' \
-  -mailgun-key='{{mailgun_key}}' 2>&1
+  -mailgun-key='{{mailgun_key}}' \
+  -token-key='{{link_token_key}}' 2>&1
