@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/schema"
-	"github.com/Preetam/onecontactlink/web/linktoken"
 
 	"github.com/VividCortex/siesta"
 )
@@ -238,12 +238,8 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err != nil || !strings.Contains(*linkStr, "-") {
-		invalidLink()
-		return
-	}
-	parts := strings.Split(*linkStr, "-")
-	if len(parts) != 2 {
+	linkToken, err := tokenCodec.DecodeToken(*linkStr)
+	if err != nil {
 		invalidLink()
 		return
 	}
@@ -256,10 +252,19 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// extract request ID
-	linktoken.NewLinkToken(data map[string]interface{}, expires int)
+	// Check if token expired
+	if linkToken.Expires <= int(time.Now().Unix()) {
+		// Token expired.
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "This link has expired.",
+		})
+		return
+	}
 
-	err = internalAPIClient.ManageRequest(request.ID, *actionStr)
+	// extract request ID
+	requestID := int(linkToken.Data["request"].(float64))
+	err = internalAPIClient.ManageRequest(requestID, *actionStr)
 	if err != nil {
 		if serverErr, ok := err.(client.ServerError); ok {
 			if int(serverErr) == http.StatusConflict {
@@ -280,7 +285,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	err = internalAPIClient.SendContactInfoEmail(request.ID)
+	err = internalAPIClient.SendContactInfoEmail(requestID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		templ.ExecuteTemplate(w, "invalid", map[string]string{

@@ -3,6 +3,7 @@ package main
 import (
 	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/web/linktoken"
 
 	"github.com/VividCortex/siesta"
 
@@ -16,9 +17,11 @@ import (
 var (
 	// RecaptchaSecret is the API secret used to verify reCHAPTCHA responses
 	RecaptchaSecret = ""
+	TokenKey        = ""
 
 	templ             *template.Template
 	internalAPIClient *internalClient.Client
+	tokenCodec        *linktoken.TokenCodec
 )
 
 func main() {
@@ -27,6 +30,8 @@ func main() {
 	templatesDir := flag.String("templates-dir", "./templates", "Path to templates")
 	internalAPIURL := flag.String("internal-api", "http://localhost:4001/v1", "internal API URL")
 	flag.StringVar(&RecaptchaSecret, "recaptcha-secret", "", "reCHAPTCHA API secret")
+	flag.StringVar(&TokenKey, "token-key", TokenKey, "Token key")
+
 	flag.Parse()
 
 	var err error
@@ -36,6 +41,7 @@ func main() {
 	}
 
 	internalAPIClient = internalClient.New(*internalAPIURL)
+	tokenCodec = linktoken.NewTokenCodec(1, TokenKey)
 
 	service := siesta.NewService("/")
 	service.DisableTrimSlash() // required for static file handler

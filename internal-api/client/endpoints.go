@@ -118,23 +118,6 @@ func (c *Client) SendContactInfoEmail(id int) error {
 	return c.doRequest("POST", fmt.Sprintf("/requests/%d/sendContactInfoEmail", id), nil, nil)
 }
 
-func (c *Client) GetRequestByCode(code string) (*schema.Request, error) {
-	request := schema.Request{}
-	resp := middleware.APIResponse{
-		Data: &request,
-	}
-	err := c.doRequest("GET", fmt.Sprintf("/links/requests/%s", code), nil, &resp)
-	if err != nil {
-		if serverErr, ok := err.(ServerError); ok {
-			if serverErr == http.StatusNotFound {
-				return nil, ErrNotFound
-			}
-		}
-		return nil, err
-	}
-	return &request, nil
-}
-
 func (c *Client) ManageRequest(id int, action string) error {
 	if action != "approve" && action != "reject" {
 		return fmt.Errorf("client: invalid action")

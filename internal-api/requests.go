@@ -10,11 +10,12 @@ import (
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
-	"github.com/mailgun/mailgun-go"
+	"github.com/Preetam/onecontactlink/web/linktoken"
 
 	"github.com/VividCortex/mysqlerr"
 	"github.com/VividCortex/siesta"
 	"github.com/go-sql-driver/mysql"
+	"github.com/mailgun/mailgun-go"
 
 	"net/http"
 )
@@ -52,40 +53,9 @@ func getRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	request := schema.Request{
 		ID: *requestID,
 	}
-	err = requestData.DB.QueryRow("SELECT code, from_user, to_user, status, created, updated"+
+	err = requestData.DB.QueryRow("SELECT from_user, to_user, status, created, updated"+
 		" FROM requests WHERE id = ?", request.ID).
-		Scan(&request.Code, &request.FromUser, &request.ToUser,
-			&request.Status, &request.Created, &request.Updated)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			requestData.StatusCode = http.StatusNotFound
-			log.Printf("[Req %s] %v", requestData.RequestID, err)
-			return
-		}
-		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
-		return
-	}
-	requestData.ResponseData = request
-}
-
-func getRequestByCode(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
-	var params siesta.Params
-	requestCode := params.String("requestCode", "", "Request code")
-	err := params.Parse(r.Form)
-	if err != nil {
-		requestData.StatusCode = http.StatusBadRequest
-		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
-		return
-	}
-	request := schema.Request{
-		Code: *requestCode,
-	}
-	err = requestData.DB.QueryRow("SELECT id, from_user, to_user, status, created, updated"+
-		" FROM requests WHERE code = ?", request.Code).
-		Scan(&request.ID, &request.FromUser, &request.ToUser,
+		Scan(&request.FromUser, &request.ToUser,
 			&request.Status, &request.Created, &request.Updated)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -109,7 +79,6 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	code := generateCode(schema.RequestCodeSize)
 	now := time.Now().Unix()
 	tx, err := requestData.DB.Begin()
 	if err != nil {
@@ -135,13 +104,11 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request.Code = code
 	request.Created = int(now)
 	request.Updated = int(now)
 
-	result, err := tx.Exec("INSERT INTO requests (code, from_user, to_user, created, updated) VALUES"+
-		" (?, ?, ?, ?, ?)", request.Code, request.FromUser,
-		request.ToUser, request.Created, request.Updated)
+	result, err := tx.Exec("INSERT INTO requests (from_user, to_user, created, updated) VALUES"+
+		" (?, ?, ?, ?)", request.FromUser, request.ToUser, request.Created, request.Updated)
 	if err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == mysqlerr.ER_DUP_ENTRY {
@@ -150,10 +117,10 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 				log.Printf("[Req %s] %v", requestData.RequestID, err)
 
 				// send the existing request
-				err := tx.QueryRow("SELECT id, code, status, created, updated FROM"+
+				err := tx.QueryRow("SELECT id, status, created, updated FROM"+
 					" requests WHERE from_user = ? AND to_user = ?",
 					request.FromUser, request.ToUser).
-					Scan(&request.ID, &request.Code, &request.Status,
+					Scan(&request.ID, &request.Status,
 						&request.Created, &request.Updated)
 				if err != nil {
 					// Some other error
@@ -225,9 +192,8 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	receiverCode := ""
 	senderName := ""
 	senderEmail := ""
-	requestCode := ""
 
-	err = requestData.DB.QueryRow("SELECT requests.code,"+
+	err = requestData.DB.QueryRow("SELECT"+
 		" u1.name AS from_name,"+
 		" e1.address as from_address,"+
 		" u2.name as to_name,"+
@@ -239,7 +205,7 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		" JOIN emails e1 ON u1.main_email = e1.id"+
 		" JOIN emails e2 ON u2.main_email = e2.id"+
 		" WHERE requests.id = ?", *requestID).
-		Scan(&requestCode, &senderName, &senderEmail, &receiverName, &receiverEmail, &receiverCode)
+		Scan(&senderName, &senderEmail, &receiverName, &receiverEmail, &receiverCode)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
@@ -247,20 +213,39 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	manageLink := fmt.Sprintf("https://www.onecontact.link/m/%s-%s", receiverCode, requestCode)
+	linkToken, err := linktoken.NewLinkToken(map[string]interface{}{
+		"request": float64(*requestID),
+	}, int(time.Now().Unix()+86400))
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+	tokenStr, err := tokenCodec.EncodeToken(linkToken)
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+	manageLink := fmt.Sprintf("https://www.onecontact.link/m/%s", tokenStr)
 	approveLink := manageLink + "?action=approve"
 	rejectLink := manageLink + "?action=reject"
 	messageContent := fmt.Sprintf(`Hi %s,
 
 %s (%s) has requested your contact information using OneContact.Link.
 
-Click on one of the following links to approve or reject this request. We'll send them this email address if you approve.
+Click on one of the following links to approve or reject this request.
+We'll send them this email address if you approve.
 
 Approve:
 %s
 
 Reject:
 %s
+
+These links expire in 1 day.
 
 Cheers!
 https://www.onecontact.link/
@@ -420,6 +405,7 @@ func sendContactInfoMail(c siesta.Context, w http.ResponseWriter, r *http.Reques
 	}
 
 	messageContent := fmt.Sprintf(`Hi %s,
+
 %s has approved your contact request! You can reach them at %s.
 
 Cheers!
