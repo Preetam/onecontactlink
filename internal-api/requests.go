@@ -213,15 +213,9 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	linkToken, err := linktoken.NewLinkToken(map[string]interface{}{
+	linkToken := linktoken.NewLinkToken(map[string]interface{}{
 		"request": float64(*requestID),
 	}, int(time.Now().Unix()+86400))
-	if err != nil {
-		requestData.StatusCode = http.StatusInternalServerError
-		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
-		return
-	}
 	tokenStr, err := tokenCodec.EncodeToken(linkToken)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError

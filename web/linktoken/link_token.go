@@ -9,8 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"math"
-	"math/big"
 	"strconv"
 	"strings"
 )
@@ -32,21 +30,15 @@ func NewTokenCodec(keyVersion int, key string) *TokenCodec {
 }
 
 type LinkToken struct {
-	Nonce   int                    `json:"nonce"`
 	Data    map[string]interface{} `json:"data"`
 	Expires int                    `json:"expires"`
 }
 
-func NewLinkToken(data map[string]interface{}, expires int) (*LinkToken, error) {
-	nonce, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt32))
-	if err != nil {
-		return nil, err
-	}
+func NewLinkToken(data map[string]interface{}, expires int) *LinkToken {
 	return &LinkToken{
-		Nonce:   int(nonce.Int64()),
 		Data:    data,
 		Expires: expires,
-	}, nil
+	}
 }
 
 func (c *TokenCodec) EncodeToken(token *LinkToken) (string, error) {
@@ -58,20 +50,22 @@ func (c *TokenCodec) EncodeToken(token *LinkToken) (string, error) {
 		return "", err
 	}
 
-	ciphertext := make([]byte, aes.BlockSize+len(buf.String()))
-	iv := ciphertext[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
 		return "", err
 	}
 
-	stream := cipher.NewCFBEncrypter(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], buf.Bytes())
-	data := ciphertext[aes.BlockSize:]
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", err
+	}
 
-	ivStr := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(iv)
-	dataStr := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(data)
+	ciphertext := gcm.Seal(nil, nonce, buf.Bytes(), nil)
+
+	nonceStr := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(nonce)
+	dataStr := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(ciphertext)
 	versionStr := strconv.FormatInt(int64(c.keyVersion), 10)
-	return versionStr + "." + ivStr + "." + dataStr, nil
+	return versionStr + "." + nonceStr + "." + dataStr, nil
 }
 
 func (c *TokenCodec) DecodeToken(tokenString string) (*LinkToken, error) {
@@ -81,11 +75,11 @@ func (c *TokenCodec) DecodeToken(tokenString string) (*LinkToken, error) {
 	}
 
 	versionStr := parts[0]
-	iv, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(parts[1])
+	nonce, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(parts[1])
 	if err != nil {
 		return nil, err
 	}
-	data, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(parts[2])
+	ciphertext, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(parts[2])
 	if err != nil {
 		return nil, err
 	}
@@ -103,8 +97,15 @@ func (c *TokenCodec) DecodeToken(tokenString string) (*LinkToken, error) {
 	if err != nil {
 		return nil, err
 	}
-	stream := cipher.NewCFBDecrypter(block, iv)
-	stream.XORKeyStream(data, data)
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	data, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	linkToken := LinkToken{}
 	err = json.NewDecoder(bytes.NewReader(data)).Decode(&linkToken)
