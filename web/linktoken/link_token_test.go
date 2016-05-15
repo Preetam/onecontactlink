@@ -7,10 +7,7 @@ func TestLinkToken(t *testing.T) {
 
 	data := map[string]interface{}{"request": float64(1)}
 	expire := 100
-	token, err := NewLinkToken(data, expire)
-	if err != nil {
-		t.Fatal(err)
-	}
+	token := NewLinkToken(data, expire)
 	res, err := c.EncodeToken(token)
 	if err != nil {
 		t.Fatal(err)
