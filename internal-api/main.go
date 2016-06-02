@@ -89,6 +89,9 @@ func main() {
 	// Links
 	service.Route("GET", "/links/requestLinks/:requestLinkCode", "gets a request link", getRequestLinkByCode)
 
+	// Authentication
+	service.Route("POST", "/auth/send", "sends an email with a login link", sendAuthEmail)
+
 	log.Println("listening on", *addr)
 	log.Fatal(http.ListenAndServe(*addr, service))
 }

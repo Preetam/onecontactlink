@@ -238,6 +238,11 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err != nil {
+		invalidLink()
+		return
+	}
+
 	linkToken, err := tokenCodec.DecodeToken(*linkStr)
 	if err != nil {
 		invalidLink()
@@ -304,4 +309,77 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 			"Success": "Rejected. That email won't be able to send you any more requests.",
 		})
 	}
+}
+
+func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	params := &siesta.Params{}
+	linkStr := params.String("link", "", "link token")
+	err := params.Parse(r.Form)
+	invalidLink := func() {
+		w.WriteHeader(http.StatusNotFound)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Not a valid link",
+		})
+		return
+	}
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	linkToken, err := tokenCodec.DecodeToken(*linkStr)
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	// Check if token expired
+	if linkToken.Expires <= int(time.Now().Unix()) {
+		// Token expired.
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "This link has expired.",
+		})
+		return
+	}
+
+	// extract user ID
+	userID := int(linkToken.Data["user"].(float64))
+
+	// get user information
+	user, err := internalAPIClient.GetUser(userID)
+	if err != nil {
+		// Token expired.
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	linkToken.Data["name"] = user.Name
+
+	// Update the expiration and set a cookie
+	linkToken.Expires = int(time.Now().Unix() + 86400)
+
+	token, err := tokenCodec.EncodeToken(linkToken)
+	if err != nil {
+		// Token expired.
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ocl",
+		Value:    token,
+		HttpOnly: true,
+		Secure:   !DevMode,
+	})
+
+	templ.ExecuteTemplate(w, "success", map[string]string{
+		"Success": "Logged in!",
+	})
 }

@@ -18,6 +18,7 @@ var (
 	// RecaptchaSecret is the API secret used to verify reCHAPTCHA responses
 	RecaptchaSecret = ""
 	TokenKey        = ""
+	DevMode         = false
 
 	templ             *template.Template
 	internalAPIClient *internalClient.Client
@@ -31,6 +32,7 @@ func main() {
 	internalAPIURL := flag.String("internal-api", "http://localhost:4001/v1", "internal API URL")
 	flag.StringVar(&RecaptchaSecret, "recaptcha-secret", "", "reCHAPTCHA API secret")
 	flag.StringVar(&TokenKey, "token-key", TokenKey, "Token key")
+	flag.BoolVar(&DevMode, "dev-mode", DevMode, "Developer mode")
 
 	flag.Parse()
 
@@ -57,6 +59,9 @@ func main() {
 
 	// manage link
 	service.Route("GET", "/m/:link", "handles request management page", serveManageRequest)
+
+	// auth link
+	service.Route("GET", "/auth/:link", "handles authentication links", serveAuth)
 
 	service.SetNotFound(http.FileServer(http.Dir(*staticDir)))
 	log.Println("static directory set to", *staticDir)
