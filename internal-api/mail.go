@@ -78,6 +78,7 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	userID := 0
 	userName := ""
 	mainEmail := ""
+	log.Printf("[Req %s] using auth email %v", requestData.RequestID, *emailAddress)
 	// Get the main email address of user with the given email address
 	err = requestData.DB.QueryRow("SELECT users.id, users.name, e2.address FROM emails e1"+
 		" JOIN users on users.id = e1.user"+
