@@ -124,3 +124,7 @@ func (c *Client) ManageRequest(id int, action string) error {
 	}
 	return c.doRequest("POST", fmt.Sprintf("/requests/%d/manage?action=%s", id, action), nil, nil)
 }
+
+func (c *Client) SendAuth(email string) error {
+	return c.doRequest("POST", "/auth/send?email="+email, nil, nil)
+}

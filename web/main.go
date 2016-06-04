@@ -53,6 +53,11 @@ func main() {
 		templ.ExecuteTemplate(w, "index", nil)
 	})
 
+	service.Route("GET", "/login", "serves login page", func(w http.ResponseWriter, r *http.Request) {
+		templ.ExecuteTemplate(w, "login", nil)
+	})
+	service.Route("POST", "/login", "serves login form submit", servePostLogin)
+
 	// contact link pages
 	service.Route("GET", "/r/:link", "handles contact request page", serveGetRequest)
 	service.Route("POST", "/r/:link", "handles contact request submission", servePostRequest)

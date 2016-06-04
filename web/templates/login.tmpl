@@ -1,0 +1,28 @@
+{{ define "login" }}
+
+{{ template "header" . }}
+<div class="row">
+  <div class="twelve columns">
+  	<h2>Login</h2>
+  	<p>Enter your email address and we'll email you a link to log in.</p>
+  	<form method="POST">
+      <div class="row">
+        <div class="twelve columns">
+          <label for="emailInput">Your email</label>
+          <input class="u-full-width" type="email" placeholder="test@mailbox.com" id="emailInput" name="email">
+        </div>
+      </div>
+      <div class="row">
+        <div class="four columns">
+          <div class="g-recaptcha" data-sitekey="6Le3rhoTAAAAAK6pdo1YQSXzhnv7TlLjqtcTOlHU"
+            style="margin-bottom: 1em">
+          </div>
+          <input class="button-primary" type="submit" value="Submit">
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{{ template "footer" . }}
+
+{{ end }}
