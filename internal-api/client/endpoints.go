@@ -3,7 +3,6 @@ package client
 import (
 	"errors"
 	"net/http"
-	"net/url"
 
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
@@ -127,5 +126,5 @@ func (c *Client) ManageRequest(id int, action string) error {
 }
 
 func (c *Client) SendAuth(email string) error {
-	return c.doRequest("POST", "/auth/send?email="+url.QueryEscape(email), nil, nil)
+	return c.doRequest("POST", "/auth/send?email="+email, nil, nil)
 }

@@ -15,7 +15,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"net/url"
 )
 
 const (
@@ -60,14 +59,6 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	var params siesta.Params
 	emailAddress := params.String("email", "", "email address of user")
 	err := params.Parse(r.Form)
-	if err != nil {
-		requestData.StatusCode = http.StatusBadRequest
-		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
-		return
-	}
-
-	*emailAddress, err = url.QueryUnescape(*emailAddress)
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
