@@ -7,6 +7,7 @@ import (
 
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
 
 	"github.com/VividCortex/siesta"
@@ -74,7 +75,8 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	err = requestData.DB.QueryRow("SELECT users.id, users.name, e2.address FROM emails e1"+
 		" JOIN users on users.id = e1.user"+
 		" JOIN emails e2 ON users.main_email = e2.id"+
-		" WHERE e1.address = ? AND e1.deleted = 0 AND users.deleted = 0", *emailAddress).
+		" WHERE e1.address = ? AND e1.deleted = 0 AND users.deleted = 0 AND users.status = ?",
+		*emailAddress, schema.UserStatusActive).
 		Scan(&userID, &userName, &mainEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
