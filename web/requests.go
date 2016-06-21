@@ -375,7 +375,7 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "ocl",
 		Value:    token,
-		Domain:   ".onecontact.link",
+		Domain:   CookieDomain,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   !DevMode,

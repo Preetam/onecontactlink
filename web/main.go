@@ -18,6 +18,7 @@ var (
 	// RecaptchaSecret is the API secret used to verify reCHAPTCHA responses
 	RecaptchaSecret = ""
 	TokenKey        = ""
+	CookieDomain    = ".localhost"
 	DevMode         = false
 
 	templ             *template.Template
@@ -32,6 +33,7 @@ func main() {
 	internalAPIURL := flag.String("internal-api", "http://localhost:4001/v1", "internal API URL")
 	flag.StringVar(&RecaptchaSecret, "recaptcha-secret", "", "reCHAPTCHA API secret")
 	flag.StringVar(&TokenKey, "token-key", TokenKey, "Token key")
+	flag.StringVar(&CookieDomain, "cookie-domain", CookieDomain, "Cookie domain")
 	flag.BoolVar(&DevMode, "dev-mode", DevMode, "Developer mode")
 
 	flag.Parse()
