@@ -17,8 +17,8 @@ import (
 var (
 	// RecaptchaSecret is the API secret used to verify reCHAPTCHA responses
 	RecaptchaSecret = ""
-	TokenKey        = ""
-	CookieDomain    = ".localhost"
+	TokenKey        = "test key 1234567"
+	CookieDomain    = ".onecontact.local"
 	DevMode         = false
 
 	templ             *template.Template
@@ -69,6 +69,10 @@ func main() {
 
 	// auth link
 	service.Route("GET", "/auth/:link", "handles authentication links", serveAuth)
+
+	if DevMode {
+		service.Route("GET", "/dev/auth/:user", "handles dev mode login as a user", serveDevModeAuth)
+	}
 
 	service.SetNotFound(http.FileServer(http.Dir(*staticDir)))
 	log.Println("static directory set to", *staticDir)

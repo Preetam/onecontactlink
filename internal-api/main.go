@@ -19,7 +19,7 @@ var (
 	MailgunDomain = "samples.mailgun.org"
 	MailgunKey    = "key-CHANGETHIS"
 	MailgunPubKey = ""
-	TokenKey      = ""
+	TokenKey      = "test key 1234567"
 
 	tokenCodec *linktoken.TokenCodec
 )

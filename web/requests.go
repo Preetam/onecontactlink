@@ -10,6 +10,7 @@ import (
 
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/schema"
+	"github.com/Preetam/onecontactlink/web/linktoken"
 
 	"github.com/VividCortex/siesta"
 )
@@ -437,5 +438,62 @@ func servePostLogin(w http.ResponseWriter, r *http.Request) {
 	templ.ExecuteTemplate(w, "success", map[string]string{
 		"Info": "We've sent a login link to '" + *emailStr +
 			"' if it's associated with a valid account.",
+	})
+}
+
+func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	params := &siesta.Params{}
+	userID := params.Int("user", 0, "user ID")
+	err := params.Parse(r.Form)
+	invalidLink := func() {
+		w.WriteHeader(http.StatusNotFound)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Not a valid link",
+		})
+		return
+	}
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	linkToken := linktoken.NewLinkToken(map[string]interface{}{
+		"user": *userID,
+	}, int(time.Now().Unix()+86400))
+
+	// get user information
+	user, err := internalAPIClient.GetUser(*userID)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	linkToken.Data["name"] = user.Name
+
+	token, err := tokenCodec.EncodeToken(linkToken)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ocl",
+		Value:    token,
+		Domain:   CookieDomain,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   !DevMode,
+	})
+
+	templ.ExecuteTemplate(w, "success", map[string]string{
+		"Success": "Logged in!",
 	})
 }
