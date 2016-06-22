@@ -244,7 +244,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	linkToken, err := tokenCodec.DecodeToken(*linkStr)
+	linkToken, err := tokenCodec.DecodeToken(*linkStr, new(linktoken.RequestTokenData))
 	if err != nil {
 		invalidLink()
 		return
@@ -269,7 +269,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// extract request ID
-	requestID := int(linkToken.Data["request"].(float64))
+	requestID := linkToken.Data.(*linktoken.RequestTokenData).Request
 	err = internalAPIClient.ManageRequest(requestID, *actionStr)
 	if err != nil {
 		if serverErr, ok := err.(client.ServerError); ok {
@@ -328,7 +328,7 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	linkToken, err := tokenCodec.DecodeToken(*linkStr)
+	linkToken, err := tokenCodec.DecodeToken(*linkStr, new(linktoken.UserTokenData))
 	if err != nil {
 		invalidLink()
 		return
@@ -345,10 +345,10 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// extract user ID
-	userID := int(linkToken.Data["user"].(float64))
+	userID := linkToken.Data.(*linktoken.UserTokenData).User
 
 	// get user information
-	user, err := internalAPIClient.GetUser(userID)
+	_, err = internalAPIClient.GetUser(userID)
 	if err != nil {
 		// Token expired.
 		w.WriteHeader(http.StatusInternalServerError)
@@ -357,8 +357,6 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
-	linkToken.Data["name"] = user.Name
 
 	// Update the expiration and set a cookie
 	linkToken.Expires = int(time.Now().Unix() + 86400)
@@ -457,12 +455,12 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	linkToken := linktoken.NewLinkToken(map[string]interface{}{
-		"user": *userID,
+	linkToken := linktoken.NewLinkToken(&linktoken.UserTokenData{
+		User: *userID,
 	}, int(time.Now().Unix()+86400))
 
 	// get user information
-	user, err := internalAPIClient.GetUser(*userID)
+	_, err = internalAPIClient.GetUser(*userID)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -471,8 +469,6 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		})
 		return
 	}
-
-	linkToken.Data["name"] = user.Name
 
 	token, err := tokenCodec.EncodeToken(linkToken)
 	if err != nil {

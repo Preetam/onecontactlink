@@ -88,8 +88,8 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send an auth email
-	linkToken := linktoken.NewLinkToken(map[string]interface{}{
-		"user": float64(userID),
+	linkToken := linktoken.NewLinkToken(&linktoken.UserTokenData{
+		User: userID,
 	}, int(time.Now().Unix()+900))
 	tokenStr, err := tokenCodec.EncodeToken(linkToken)
 	if err != nil {

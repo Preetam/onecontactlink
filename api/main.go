@@ -43,16 +43,15 @@ func main() {
 			q()
 			return
 		}
-		linktoken, err := tokenCodec.DecodeToken(cookie.Value)
+		token, err := tokenCodec.DecodeToken(cookie.Value, new(linktoken.UserTokenData))
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			q()
 			return
 		}
-		if linktoken.Data["user"] != nil {
-			c.Set("user", int(linktoken.Data["user"].(float64)))
-			log.Println("user:", c.Get("user"))
-		}
+		userID := token.Data.(*linktoken.UserTokenData).User
+		c.Set("user", userID)
+		log.Println("user:", c.Get("user"))
 	})
 
 	service.Route("GET", "/ping", "ping",

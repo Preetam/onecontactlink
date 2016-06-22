@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/Preetam/onecontactlink/internal-api/client"
@@ -16,8 +17,6 @@ import (
 	"github.com/VividCortex/siesta"
 	"github.com/go-sql-driver/mysql"
 	"github.com/mailgun/mailgun-go"
-
-	"net/http"
 )
 
 const (
@@ -56,7 +55,7 @@ func getRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	err = requestData.DB.QueryRow("SELECT from_user, to_user, status, created, updated"+
 		" FROM requests WHERE id = ?", request.ID).
 		Scan(&request.FromUser, &request.ToUser,
-			&request.Status, &request.Created, &request.Updated)
+		&request.Status, &request.Created, &request.Updated)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			requestData.StatusCode = http.StatusNotFound
@@ -121,7 +120,7 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 					" requests WHERE from_user = ? AND to_user = ?",
 					request.FromUser, request.ToUser).
 					Scan(&request.ID, &request.Status,
-						&request.Created, &request.Updated)
+					&request.Created, &request.Updated)
 				if err != nil {
 					// Some other error
 					requestData.StatusCode = http.StatusInternalServerError
@@ -213,8 +212,8 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	linkToken := linktoken.NewLinkToken(map[string]interface{}{
-		"request": float64(*requestID),
+	linkToken := linktoken.NewLinkToken(&linktoken.RequestTokenData{
+		Request: *requestID,
 	}, int(time.Now().Unix()+86400))
 	tokenStr, err := tokenCodec.EncodeToken(linkToken)
 	if err != nil {
