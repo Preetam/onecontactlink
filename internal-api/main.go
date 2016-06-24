@@ -20,6 +20,7 @@ var (
 	MailgunKey    = "key-CHANGETHIS"
 	MailgunPubKey = ""
 	TokenKey      = "test key 1234567"
+	DevMode       = false
 
 	tokenCodec *linktoken.TokenCodec
 )
@@ -35,6 +36,7 @@ func main() {
 	flag.StringVar(&MailgunKey, "mailgun-key", MailgunKey, "Mailgun private key")
 	flag.StringVar(&MailgunPubKey, "mailgun-pubkey", MailgunPubKey, "Mailgun public key")
 	flag.StringVar(&TokenKey, "token-key", TokenKey, "Token key")
+	flag.BoolVar(&DevMode, "dev-mode", DevMode, "developer mode")
 	flag.Parse()
 
 	db, err := sql.Open("mysql", DSN)

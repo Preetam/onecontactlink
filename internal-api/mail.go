@@ -122,6 +122,19 @@ https://www.onecontact.link/
 }
 
 func sendMail(mg mailgun.Mailgun, msg client.EmailMessage) error {
-	_, _, err := mg.Send(mailgun.NewMessage(msg.From, msg.Subject, msg.Content, msg.To))
+	var err error
+
+	if !DevMode {
+		_, _, err = mg.Send(mailgun.NewMessage(msg.From, msg.Subject, msg.Content, msg.To))
+	} else {
+		log.Printf(`Sending mail:
+From: %s
+To: %s
+Subject: %s
+Content:
+%s
+`, msg.From, msg.To, msg.Subject, msg.Content)
+	}
+
 	return err
 }
