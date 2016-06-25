@@ -1,17 +1,18 @@
 package main
 
 import (
-	"github.com/Preetam/onecontactlink/middleware"
-	"github.com/Preetam/onecontactlink/web/linktoken"
-
-	"github.com/VividCortex/siesta"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/mailgun/mailgun-go"
-
+	// std
 	"database/sql"
 	"flag"
 	"log"
 	"net/http"
+	// base
+	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/web/linktoken"
+	// vendor
+	"github.com/VividCortex/siesta"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/mailgun/mailgun-go"
 )
 
 var (

@@ -1,18 +1,19 @@
 package main
 
 import (
+	// std
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
-
+	// base
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
-
+	// vendor
 	"github.com/VividCortex/mysqlerr"
 	"github.com/VividCortex/siesta"
 	"github.com/go-sql-driver/mysql"
@@ -55,7 +56,7 @@ func getRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	err = requestData.DB.QueryRow("SELECT from_user, to_user, status, created, updated"+
 		" FROM requests WHERE id = ?", request.ID).
 		Scan(&request.FromUser, &request.ToUser,
-		&request.Status, &request.Created, &request.Updated)
+			&request.Status, &request.Created, &request.Updated)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			requestData.StatusCode = http.StatusNotFound
@@ -120,7 +121,7 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 					" requests WHERE from_user = ? AND to_user = ?",
 					request.FromUser, request.ToUser).
 					Scan(&request.ID, &request.Status,
-					&request.Created, &request.Updated)
+						&request.Created, &request.Updated)
 				if err != nil {
 					// Some other error
 					requestData.StatusCode = http.StatusInternalServerError

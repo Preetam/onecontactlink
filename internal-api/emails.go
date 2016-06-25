@@ -1,15 +1,15 @@
 package main
 
 import (
+	// std
 	"database/sql"
-
-	"github.com/Preetam/onecontactlink/middleware"
-	"github.com/Preetam/onecontactlink/schema"
-
-	"github.com/VividCortex/siesta"
-
 	"log"
 	"net/http"
+	// base
+	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/schema"
+	// vendor
+	"github.com/VividCortex/siesta"
 )
 
 func getEmailByAddress(c siesta.Context, w http.ResponseWriter, r *http.Request) {

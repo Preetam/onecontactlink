@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/Preetam/onecontactlink/middleware"
-	"github.com/Preetam/onecontactlink/schema"
-
-	"github.com/VividCortex/siesta"
-
+	// std
 	"log"
 	"net/http"
+	// base
+	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/schema"
+	// vendor
+	"github.com/VividCortex/siesta"
 )
 
 func getRequestLinkByCode(c siesta.Context, w http.ResponseWriter, r *http.Request) {

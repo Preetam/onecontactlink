@@ -1,17 +1,18 @@
 package main
 
 import (
-	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
-	"github.com/Preetam/onecontactlink/middleware"
-	"github.com/Preetam/onecontactlink/web/linktoken"
-
-	"github.com/VividCortex/siesta"
-
+	// std
 	"flag"
 	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
+	// base
+	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
+	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/web/linktoken"
+	// vendor
+	"github.com/VividCortex/siesta"
 )
 
 var (

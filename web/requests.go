@@ -1,17 +1,18 @@
 package main
 
 import (
+	// std
 	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
-
+	// base
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
-
+	// vendor
 	"github.com/VividCortex/siesta"
 )
 
