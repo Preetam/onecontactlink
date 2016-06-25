@@ -55,6 +55,10 @@ func main() {
 		templ.ExecuteTemplate(w, "index", nil)
 	})
 
+	service.Route("GET", "/app", "serves app page", func(w http.ResponseWriter, r *http.Request) {
+		templ.ExecuteTemplate(w, "app", nil)
+	})
+
 	service.Route("GET", "/login", "serves login page", func(w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "login", nil)
 	})

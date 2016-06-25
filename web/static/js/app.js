@@ -1,4 +1,3 @@
-// Main app
 var user = m.request({
     method: "GET",
     url: "/api/v1/user",
@@ -15,7 +14,7 @@ var home = {
         var userInfo = user();
         return m("p", userInfo.name);
     }
-}
+};
 
 var login = {
     view: function() {
@@ -26,7 +25,7 @@ var login = {
             ])
         ]);
     }
-}
+};
 
 var nav = {
     view: function() {
@@ -35,15 +34,14 @@ var nav = {
             m("a[href='/login']", {config: m.route}, "login")
         ]);
     }
-}
+};
 
 var app = function(page) {
     return {
         view: function() { return [nav, page]; }
     };
-}
+};
 
-// Initialize
 m.route.mode = "hash";
 m.mount(document.querySelector("#nav"), nav);
 m.route(document.querySelector("#app"), "/", {
