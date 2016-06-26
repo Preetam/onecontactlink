@@ -1,17 +1,18 @@
 package main
 
 import (
-	"github.com/Preetam/onecontactlink/middleware"
-	"github.com/Preetam/onecontactlink/web/linktoken"
-
-	"github.com/VividCortex/siesta"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/mailgun/mailgun-go"
-
+	// std
 	"database/sql"
 	"flag"
 	"log"
 	"net/http"
+	// base
+	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/web/linktoken"
+	// vendor
+	"github.com/VividCortex/siesta"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/mailgun/mailgun-go"
 )
 
 var (
@@ -19,7 +20,8 @@ var (
 	MailgunDomain = "samples.mailgun.org"
 	MailgunKey    = "key-CHANGETHIS"
 	MailgunPubKey = ""
-	TokenKey      = ""
+	TokenKey      = "test key 1234567"
+	DevMode       = false
 
 	tokenCodec *linktoken.TokenCodec
 )
@@ -35,6 +37,7 @@ func main() {
 	flag.StringVar(&MailgunKey, "mailgun-key", MailgunKey, "Mailgun private key")
 	flag.StringVar(&MailgunPubKey, "mailgun-pubkey", MailgunPubKey, "Mailgun public key")
 	flag.StringVar(&TokenKey, "token-key", TokenKey, "Token key")
+	flag.BoolVar(&DevMode, "dev-mode", DevMode, "developer mode")
 	flag.Parse()
 
 	db, err := sql.Open("mysql", DSN)

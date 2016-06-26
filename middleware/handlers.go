@@ -1,13 +1,15 @@
 package middleware
 
 import (
-	"github.com/VividCortex/siesta"
-
+	// std
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
+
+	// vendor
+	"github.com/VividCortex/siesta"
 )
 
 type APIResponse struct {

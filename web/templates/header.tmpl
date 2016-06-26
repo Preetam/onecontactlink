@@ -1,4 +1,4 @@
-{{ define "header" }}
+{{- define "header" -}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,45 +30,45 @@
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <div class="container">
 
-  {{ template "nav" . }}
+  {{- template "nav" . -}}
 
-  {{ if .Info }}
+  {{- if .Info -}}
     <div class="row">
       <div class="twelve columns">
         <div class='message-bubble info noselect'>
-          Info: {{ .Info }}
+          <span>Info: </span>{{- .Info -}}
         </div>
       </div>
     </div>
-  {{ end }}
+  {{- end -}}
 
-  {{ if .Success }}
+  {{- if .Success -}}
     <div class="row">
       <div class="twelve columns">
         <div class='message-bubble success noselect'>
-          Success: {{ .Success }}
+          <span>Success: </span>{{- .Success -}}
         </div>
       </div>
     </div>
-  {{ end }}
+  {{- end -}}
 
-  {{ if .Warning }}
+  {{- if .Warning -}}
     <div class="row">
       <div class="twelve columns">
         <div class='message-bubble warning noselect'>
-          Warning: {{ .Warning }}
+          <span>Warning: </span>{{- .Warning -}}
         </div>
       </div>
     </div>
-  {{ end }}
+  {{- end -}}
 
-  {{ if .Error }}
+  {{- if .Error -}}
     <div class="row">
       <div class="twelve columns">
         <div class='message-bubble error noselect'>
-          Error: {{ .Error }}
+          <span>Error: </span>{{- .Error -}}
         </div>
       </div>
     </div>
-  {{ end }}
-{{ end }}
+  {{- end -}}
+{{- end -}}

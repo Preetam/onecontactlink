@@ -1,6 +1,9 @@
 package main
 
-import "crypto/rand"
+import (
+	// std
+	"crypto/rand"
+)
 
 func generateCode(length int) string {
 	const valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

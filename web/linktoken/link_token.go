@@ -30,11 +30,48 @@ func NewTokenCodec(keyVersion int, key string) *TokenCodec {
 }
 
 type LinkToken struct {
-	Data    map[string]interface{} `json:"data"`
-	Expires int                    `json:"expires"`
+	Data    TokenData `json:"data"`
+	Expires int       `json:"expires"`
 }
 
-func NewLinkToken(data map[string]interface{}, expires int) *LinkToken {
+type TokenData interface {
+	json.Marshaler
+	json.Unmarshaler
+}
+
+type UserTokenData struct {
+	User int `json:"user"`
+}
+
+func (d *UserTokenData) MarshalJSON() ([]byte, error) {
+	type X UserTokenData
+	x := X(*d)
+	return json.Marshal(x)
+}
+
+func (d *UserTokenData) UnmarshalJSON(data []byte) error {
+	type X *UserTokenData
+	x := X(d)
+	return json.Unmarshal(data, &x)
+}
+
+type RequestTokenData struct {
+	Request int `json:"request"`
+}
+
+func (d *RequestTokenData) MarshalJSON() ([]byte, error) {
+	type X RequestTokenData
+	x := X(*d)
+	return json.Marshal(x)
+}
+
+func (d *RequestTokenData) UnmarshalJSON(data []byte) error {
+	type X *RequestTokenData
+	x := X(d)
+	return json.Unmarshal(data, &x)
+}
+
+func NewLinkToken(data TokenData, expires int) *LinkToken {
 	return &LinkToken{
 		Data:    data,
 		Expires: expires,
@@ -68,7 +105,7 @@ func (c *TokenCodec) EncodeToken(token *LinkToken) (string, error) {
 	return versionStr + "." + nonceStr + "." + dataStr, nil
 }
 
-func (c *TokenCodec) DecodeToken(tokenString string) (*LinkToken, error) {
+func (c *TokenCodec) DecodeToken(tokenString string, tokenData TokenData) (*LinkToken, error) {
 	parts := strings.Split(tokenString, ".")
 	if len(parts) != 3 {
 		return nil, ErrInvalidLinkToken
@@ -107,10 +144,13 @@ func (c *TokenCodec) DecodeToken(tokenString string) (*LinkToken, error) {
 		return nil, err
 	}
 
-	linkToken := LinkToken{}
+	linkToken := LinkToken{
+		Data: tokenData,
+	}
 	err = json.NewDecoder(bytes.NewReader(data)).Decode(&linkToken)
 	if err != nil {
 		return nil, err
 	}
+	tokenData = linkToken.Data
 	return &linkToken, nil
 }

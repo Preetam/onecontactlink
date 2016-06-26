@@ -1,21 +1,21 @@
 package main
 
 import (
+	// std
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
 	"time"
-
+	// base
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
-
+	// vendor
 	"github.com/VividCortex/siesta"
 	"github.com/mailgun/mailgun-go"
-
-	"encoding/json"
-	"log"
-	"net/http"
 )
 
 const (
@@ -88,8 +88,8 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send an auth email
-	linkToken := linktoken.NewLinkToken(map[string]interface{}{
-		"user": float64(userID),
+	linkToken := linktoken.NewLinkToken(&linktoken.UserTokenData{
+		User: userID,
 	}, int(time.Now().Unix()+900))
 	tokenStr, err := tokenCodec.EncodeToken(linkToken)
 	if err != nil {
@@ -122,6 +122,19 @@ https://www.onecontact.link/
 }
 
 func sendMail(mg mailgun.Mailgun, msg client.EmailMessage) error {
-	_, _, err := mg.Send(mailgun.NewMessage(msg.From, msg.Subject, msg.Content, msg.To))
+	var err error
+
+	if !DevMode {
+		_, _, err = mg.Send(mailgun.NewMessage(msg.From, msg.Subject, msg.Content, msg.To))
+	} else {
+		log.Printf(`Sending mail:
+From: %s
+To: %s
+Subject: %s
+Content:
+%s
+`, msg.From, msg.To, msg.Subject, msg.Content)
+	}
+
 	return err
 }

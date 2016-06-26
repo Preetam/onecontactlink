@@ -1,23 +1,23 @@
 package main
 
 import (
+	// std
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
-
+	// base
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
-
+	// vendor
 	"github.com/VividCortex/mysqlerr"
 	"github.com/VividCortex/siesta"
 	"github.com/go-sql-driver/mysql"
 	"github.com/mailgun/mailgun-go"
-
-	"net/http"
 )
 
 const (
@@ -213,8 +213,8 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	linkToken := linktoken.NewLinkToken(map[string]interface{}{
-		"request": float64(*requestID),
+	linkToken := linktoken.NewLinkToken(&linktoken.RequestTokenData{
+		Request: *requestID,
 	}, int(time.Now().Unix()+86400))
 	tokenStr, err := tokenCodec.EncodeToken(linkToken)
 	if err != nil {

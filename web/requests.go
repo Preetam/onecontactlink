@@ -1,16 +1,18 @@
 package main
 
 import (
+	// std
 	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
-
+	// base
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/schema"
-
+	"github.com/Preetam/onecontactlink/web/linktoken"
+	// vendor
 	"github.com/VividCortex/siesta"
 )
 
@@ -243,7 +245,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	linkToken, err := tokenCodec.DecodeToken(*linkStr)
+	linkToken, err := tokenCodec.DecodeToken(*linkStr, new(linktoken.RequestTokenData))
 	if err != nil {
 		invalidLink()
 		return
@@ -268,7 +270,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// extract request ID
-	requestID := int(linkToken.Data["request"].(float64))
+	requestID := linkToken.Data.(*linktoken.RequestTokenData).Request
 	err = internalAPIClient.ManageRequest(requestID, *actionStr)
 	if err != nil {
 		if serverErr, ok := err.(client.ServerError); ok {
@@ -327,7 +329,7 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	linkToken, err := tokenCodec.DecodeToken(*linkStr)
+	linkToken, err := tokenCodec.DecodeToken(*linkStr, new(linktoken.UserTokenData))
 	if err != nil {
 		invalidLink()
 		return
@@ -344,10 +346,10 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// extract user ID
-	userID := int(linkToken.Data["user"].(float64))
+	userID := linkToken.Data.(*linktoken.UserTokenData).User
 
 	// get user information
-	user, err := internalAPIClient.GetUser(userID)
+	_, err = internalAPIClient.GetUser(userID)
 	if err != nil {
 		// Token expired.
 		w.WriteHeader(http.StatusInternalServerError)
@@ -356,8 +358,6 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
-	linkToken.Data["name"] = user.Name
 
 	// Update the expiration and set a cookie
 	linkToken.Expires = int(time.Now().Unix() + 86400)
@@ -375,14 +375,16 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "ocl",
 		Value:    token,
-		Domain:   ".onecontact.link",
+		Domain:   CookieDomain,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   !DevMode,
 	})
 
+	w.Header().Add("Refresh", "2; /app")
+
 	templ.ExecuteTemplate(w, "success", map[string]string{
-		"Success": "Logged in!",
+		"Success": "Logged in! Redirecting you to the app...",
 	})
 }
 
@@ -391,51 +393,118 @@ func servePostLogin(w http.ResponseWriter, r *http.Request) {
 	recaptchaResponse := params.String("g-recaptcha-response", "", "reCAPTCHA response")
 	emailStr := params.String("email", "", "email")
 	err := params.Parse(r.Form)
-
-	if *recaptchaResponse == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "login", map[string]string{
-			"Error": "Bad CAPTCHA",
-		})
-		return
-	}
-
-	// verify CAPTCHA
-	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify", url.Values{
-		"secret":   []string{RecaptchaSecret},
-		"response": []string{*recaptchaResponse},
-	})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "login", map[string]string{
-			"Warning": "Something went wrong. Please try again.",
-		})
-		return
-	}
-	recaptchaAPIResponse := struct {
-		Success bool `json:"success"`
-	}{}
-
-	defer resp.Body.Close()
-	err = json.NewDecoder(resp.Body).Decode(&recaptchaAPIResponse)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "login", map[string]string{
-			"Warning": "Something went wrong. Please try again.",
-		})
-		return
-	}
-	if !recaptchaAPIResponse.Success {
 		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "login", map[string]string{
-			"Error": "Couldn't verify CAPTCHA. Please try again.",
+		templ.ExecuteTemplate(w, "request", map[string]string{
+			"Error": "Invalid parameters.",
 		})
 		return
+	}
+
+	if !DevMode {
+		// Handle CAPTCHA
+
+		if *recaptchaResponse == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			templ.ExecuteTemplate(w, "login", map[string]string{
+				"Error": "Bad CAPTCHA",
+			})
+			return
+		}
+
+		// verify CAPTCHA
+		resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify", url.Values{
+			"secret":   []string{RecaptchaSecret},
+			"response": []string{*recaptchaResponse},
+		})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			templ.ExecuteTemplate(w, "login", map[string]string{
+				"Warning": "Something went wrong. Please try again.",
+			})
+			return
+		}
+		recaptchaAPIResponse := struct {
+			Success bool `json:"success"`
+		}{}
+
+		defer resp.Body.Close()
+		err = json.NewDecoder(resp.Body).Decode(&recaptchaAPIResponse)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			templ.ExecuteTemplate(w, "login", map[string]string{
+				"Warning": "Something went wrong. Please try again.",
+			})
+			return
+		}
+		if !recaptchaAPIResponse.Success {
+			w.WriteHeader(http.StatusBadRequest)
+			templ.ExecuteTemplate(w, "login", map[string]string{
+				"Error": "Couldn't verify CAPTCHA. Please try again.",
+			})
+			return
+		}
+
 	}
 
 	internalAPIClient.SendAuth(*emailStr)
 	templ.ExecuteTemplate(w, "success", map[string]string{
 		"Info": "We've sent a login link to '" + *emailStr +
 			"' if it's associated with a valid account.",
+	})
+}
+
+func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	params := &siesta.Params{}
+	userID := params.Int("user", 0, "user ID")
+	err := params.Parse(r.Form)
+	invalidLink := func() {
+		w.WriteHeader(http.StatusNotFound)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Not a valid link",
+		})
+		return
+	}
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	linkToken := linktoken.NewLinkToken(&linktoken.UserTokenData{
+		User: *userID,
+	}, int(time.Now().Unix()+86400))
+
+	// get user information
+	_, err = internalAPIClient.GetUser(*userID)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	token, err := tokenCodec.EncodeToken(linkToken)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ocl",
+		Value:    token,
+		Domain:   CookieDomain,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   !DevMode,
+	})
+
+	templ.ExecuteTemplate(w, "success", map[string]string{
+		"Success": "Logged in!",
 	})
 }

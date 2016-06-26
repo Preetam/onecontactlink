@@ -1,23 +1,26 @@
 package main
 
 import (
-	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
-	"github.com/Preetam/onecontactlink/middleware"
-	"github.com/Preetam/onecontactlink/web/linktoken"
-
-	"github.com/VividCortex/siesta"
-
+	// std
 	"flag"
 	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
+	// base
+	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
+	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/web/linktoken"
+	// vendor
+	"github.com/VividCortex/siesta"
 )
 
 var (
 	// RecaptchaSecret is the API secret used to verify reCHAPTCHA responses
 	RecaptchaSecret = ""
-	TokenKey        = ""
+	TokenKey        = "test key 1234567"
+	CookieDomain    = ".onecontact.local"
 	DevMode         = false
 
 	templ             *template.Template
@@ -32,6 +35,7 @@ func main() {
 	internalAPIURL := flag.String("internal-api", "http://localhost:4001/v1", "internal API URL")
 	flag.StringVar(&RecaptchaSecret, "recaptcha-secret", "", "reCHAPTCHA API secret")
 	flag.StringVar(&TokenKey, "token-key", TokenKey, "Token key")
+	flag.StringVar(&CookieDomain, "cookie-domain", CookieDomain, "Cookie domain")
 	flag.BoolVar(&DevMode, "dev-mode", DevMode, "Developer mode")
 
 	flag.Parse()
@@ -53,6 +57,25 @@ func main() {
 		templ.ExecuteTemplate(w, "index", nil)
 	})
 
+	service.Route("GET", "/app", "serves app page", func(w http.ResponseWriter, r *http.Request) {
+		templ.ExecuteTemplate(w, "app", map[string]string{
+			"App": "true",
+		})
+	})
+
+	service.Route("GET", "/app/logout", "serves app page", func(w http.ResponseWriter, r *http.Request) {
+		http.SetCookie(w, &http.Cookie{
+			Name:     "ocl",
+			Value:    "",
+			Domain:   CookieDomain,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   !DevMode,
+			Expires:  time.Time{},
+		})
+		w.Header().Add("Refresh", "0; /")
+	})
+
 	service.Route("GET", "/login", "serves login page", func(w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "login", nil)
 	})
@@ -67,6 +90,10 @@ func main() {
 
 	// auth link
 	service.Route("GET", "/auth/:link", "handles authentication links", serveAuth)
+
+	if DevMode {
+		service.Route("GET", "/dev/auth/:user", "handles dev mode login as a user", serveDevModeAuth)
+	}
 
 	service.SetNotFound(http.FileServer(http.Dir(*staticDir)))
 	log.Println("static directory set to", *staticDir)
