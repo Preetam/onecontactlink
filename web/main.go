@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 	// base
 	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
@@ -57,7 +58,22 @@ func main() {
 	})
 
 	service.Route("GET", "/app", "serves app page", func(w http.ResponseWriter, r *http.Request) {
-		templ.ExecuteTemplate(w, "app", nil)
+		templ.ExecuteTemplate(w, "app", map[string]string{
+			"App": "true",
+		})
+	})
+
+	service.Route("GET", "/app/logout", "serves app page", func(w http.ResponseWriter, r *http.Request) {
+		http.SetCookie(w, &http.Cookie{
+			Name:     "ocl",
+			Value:    "",
+			Domain:   CookieDomain,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   !DevMode,
+			Expires:  time.Time{},
+		})
+		w.Header().Add("Refresh", "0; /")
 	})
 
 	service.Route("GET", "/login", "serves login page", func(w http.ResponseWriter, r *http.Request) {

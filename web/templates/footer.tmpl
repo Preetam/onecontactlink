@@ -1,4 +1,4 @@
-{{ define "footer" }}
+{{- define "footer" -}}
 
   </div> <!-- container -->
 
@@ -14,7 +14,9 @@
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 </body>
 <script src='https://www.google.com/recaptcha/api.js'></script>
-<script src="/js/mithril.min.js"></script>
-<script src="/js/app.js"></script>
-</html>
+{{ if .App }}
+    <script src="/js/mithril.min.js"></script>
+    <script src="/js/app.js"></script>
 {{ end }}
+</html>
+{{- end -}}

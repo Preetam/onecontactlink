@@ -12,7 +12,18 @@ var user = m.request({
 var home = {
     view: function() {
         var userInfo = user();
-        return m("p", userInfo.name);
+        if (!userInfo || !userInfo.name) {
+            window.location = '/login';
+        }
+        return m("div[class='row']", [
+            m("div[class='twelve columns']",
+                m("p", "Welcome, " + userInfo.name + ".")
+            ),
+            m("div[class='twelve columns']", [
+                m("h5", "Profile"),
+                m("p", [m("strong", "Main email address:"), m("span", " " + userInfo.mainEmail)])
+            ])
+        ]);
     }
 };
 
@@ -29,22 +40,17 @@ var login = {
 
 var nav = {
     view: function() {
-        return m("div", [
-            m("a[href='/']", {config: m.route}, "home"),
-            m("a[href='/login']", {config: m.route}, "login")
-        ]);
+        return [
+            m("li[class='navbar-item']",
+                m("a[href='/']", {config: m.route}, "Home"),
+                m("a[href='/app/logout']", "Logout")
+            )
+        ];
     }
-};
-
-var app = function(page) {
-    return {
-        view: function() { return [nav, page]; }
-    };
 };
 
 m.route.mode = "hash";
 m.mount(document.querySelector("#nav"), nav);
 m.route(document.querySelector("#app"), "/", {
-    "/": home,
-    "/login": login
+    "/": home
 });
