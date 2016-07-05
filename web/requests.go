@@ -418,25 +418,6 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func servePostSignup(w http.ResponseWriter, r *http.Request) {
-	params := &siesta.Params{}
-	emailStr := params.String("email", "", "email")
-	err := params.Parse(r.Form)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "request", map[string]string{
-			"Error": "Invalid parameters.",
-		})
-		return
-	}
-
-	internalAPIClient.SendAuth(*emailStr)
-	templ.ExecuteTemplate(w, "success", map[string]string{
-		"Info": "We've sent a login link to '" + *emailStr +
-			"' if it's associated with a valid account.",
-	})
-}
-
 func verifyCaptcha(c siesta.Context, r *http.Request, w http.ResponseWriter, q func()) {
 	if DevMode {
 		return

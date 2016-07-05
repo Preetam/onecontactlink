@@ -81,11 +81,6 @@ func main() {
 	})
 	service.Route("POST", "/login", "serves login form submit", siesta.Compose(verifyCaptcha, servePostLogin))
 
-	service.Route("GET", "/signup", "serves signup page", func(w http.ResponseWriter, r *http.Request) {
-		templ.ExecuteTemplate(w, "signup", nil)
-	})
-	service.Route("POST", "/signup", "serves signup form submit", siesta.Compose(verifyCaptcha, servePostSignup))
-
 	// contact link pages
 	service.Route("GET", "/r/:link", "handles contact request page", serveGetRequest)
 	service.Route("POST", "/r/:link", "handles contact request submission", siesta.Compose(verifyCaptcha, servePostRequest))
