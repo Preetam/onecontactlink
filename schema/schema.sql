@@ -23,18 +23,6 @@ CREATE TABLE `emails` (
   UNIQUE KEY `address` (`address`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `tokens` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `user` int(10) NOT NULL DEFAULT '0',
-  `value` char(32) DEFAULT NULL,
-  `created` int(10) unsigned NOT NULL,
-  `updated` int(10) unsigned NOT NULL,
-  `deleted` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_deleted` (`user`,`deleted`),
-  UNIQUE KEY `value` (`value`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
-
 CREATE TABLE `requests` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `from_user` int(10) NOT NULL DEFAULT '0',

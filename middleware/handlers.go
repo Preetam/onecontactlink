@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-
 	// vendor
 	"github.com/VividCortex/siesta"
 )

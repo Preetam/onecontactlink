@@ -128,35 +128,6 @@ INSERT INTO `schema_version` VALUES (1,1462074685);
 UNLOCK TABLES;
 
 --
--- Table structure for table `tokens`
---
-
-DROP TABLE IF EXISTS `tokens`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tokens` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `user` int(10) NOT NULL DEFAULT '0',
-  `value` char(32) DEFAULT NULL,
-  `created` int(10) unsigned NOT NULL,
-  `updated` int(10) unsigned NOT NULL,
-  `deleted` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_deleted` (`user`,`deleted`),
-  UNIQUE KEY `value` (`value`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tokens`
---
-
-LOCK TABLES `tokens` WRITE;
-/*!40000 ALTER TABLE `tokens` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tokens` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `users`
 --
 

@@ -68,7 +68,6 @@ func serveGetRequest(w http.ResponseWriter, r *http.Request) {
 
 func servePostRequest(w http.ResponseWriter, r *http.Request) {
 	params := &siesta.Params{}
-	recaptchaResponse := params.String("g-recaptcha-response", "", "reCAPTCHA response")
 	nameStr := params.String("name", "", "name")
 	emailStr := params.String("email", "", "email")
 	linkStr := params.String("link", "", "link code")
@@ -88,14 +87,6 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(*linkStr, "-")
 	if len(parts) != 2 {
 		invalidLink()
-	}
-
-	if *recaptchaResponse == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "request", map[string]string{
-			"Error": "Bad CAPTCHA",
-		})
-		return
 	}
 
 	// get request link
@@ -124,41 +115,6 @@ func servePostRequest(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		templ.ExecuteTemplate(w, "request", map[string]string{
 			"Error": "You must provide a name and email address",
-		})
-		return
-	}
-
-	// verify CAPTCHA
-	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify", url.Values{
-		"secret":   []string{RecaptchaSecret},
-		"response": []string{*recaptchaResponse},
-	})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "request", map[string]string{
-			"Name":    user.Name,
-			"Warning": "Something went wrong. Please try again.",
-		})
-		return
-	}
-	recaptchaAPIResponse := struct {
-		Success bool `json:"success"`
-	}{}
-
-	defer resp.Body.Close()
-	err = json.NewDecoder(resp.Body).Decode(&recaptchaAPIResponse)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "request", map[string]string{
-			"Name":    user.Name,
-			"Warning": "Something went wrong. Please try again.",
-		})
-		return
-	}
-	if !recaptchaAPIResponse.Success {
-		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "request", map[string]string{
-			"Error": "Couldn't verify CAPTCHA. Please try again.",
 		})
 		return
 	}
@@ -390,7 +346,6 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 
 func servePostLogin(w http.ResponseWriter, r *http.Request) {
 	params := &siesta.Params{}
-	recaptchaResponse := params.String("g-recaptcha-response", "", "reCAPTCHA response")
 	emailStr := params.String("email", "", "email")
 	err := params.Parse(r.Form)
 	if err != nil {
@@ -399,52 +354,6 @@ func servePostLogin(w http.ResponseWriter, r *http.Request) {
 			"Error": "Invalid parameters.",
 		})
 		return
-	}
-
-	if !DevMode {
-		// Handle CAPTCHA
-
-		if *recaptchaResponse == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			templ.ExecuteTemplate(w, "login", map[string]string{
-				"Error": "Bad CAPTCHA",
-			})
-			return
-		}
-
-		// verify CAPTCHA
-		resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify", url.Values{
-			"secret":   []string{RecaptchaSecret},
-			"response": []string{*recaptchaResponse},
-		})
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			templ.ExecuteTemplate(w, "login", map[string]string{
-				"Warning": "Something went wrong. Please try again.",
-			})
-			return
-		}
-		recaptchaAPIResponse := struct {
-			Success bool `json:"success"`
-		}{}
-
-		defer resp.Body.Close()
-		err = json.NewDecoder(resp.Body).Decode(&recaptchaAPIResponse)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			templ.ExecuteTemplate(w, "login", map[string]string{
-				"Warning": "Something went wrong. Please try again.",
-			})
-			return
-		}
-		if !recaptchaAPIResponse.Success {
-			w.WriteHeader(http.StatusBadRequest)
-			templ.ExecuteTemplate(w, "login", map[string]string{
-				"Error": "Couldn't verify CAPTCHA. Please try again.",
-			})
-			return
-		}
-
 	}
 
 	internalAPIClient.SendAuth(*emailStr)
@@ -507,4 +416,67 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	templ.ExecuteTemplate(w, "success", map[string]string{
 		"Success": "Logged in!",
 	})
+}
+
+func verifyCaptcha(c siesta.Context, r *http.Request, w http.ResponseWriter, q func()) {
+	if DevMode {
+		return
+	}
+
+	params := &siesta.Params{}
+	recaptchaResponse := params.String("g-recaptcha-response", "", "reCAPTCHA response")
+	err := params.Parse(r.Form)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "request", map[string]string{
+			"Error": "Missing CAPTCHA parameter.",
+		})
+		q()
+		return
+	}
+
+	if *recaptchaResponse == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "login", map[string]string{
+			"Error": "Bad CAPTCHA",
+		})
+		q()
+		return
+	}
+
+	// verify CAPTCHA
+	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify", url.Values{
+		"secret":   []string{RecaptchaSecret},
+		"response": []string{*recaptchaResponse},
+	})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "login", map[string]string{
+			"Warning": "Something went wrong. Please try again.",
+		})
+		q()
+		return
+	}
+	recaptchaAPIResponse := struct {
+		Success bool `json:"success"`
+	}{}
+
+	defer resp.Body.Close()
+	err = json.NewDecoder(resp.Body).Decode(&recaptchaAPIResponse)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "login", map[string]string{
+			"Warning": "Something went wrong. Please try again.",
+		})
+		q()
+		return
+	}
+	if !recaptchaAPIResponse.Success {
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "login", map[string]string{
+			"Error": "Couldn't verify CAPTCHA. Please try again.",
+		})
+		q()
+		return
+	}
 }

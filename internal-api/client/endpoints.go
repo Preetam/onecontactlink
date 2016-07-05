@@ -23,15 +23,6 @@ type EmailMessage struct {
 	Content string `json:"content"`
 }
 
-func (c *Client) Authenticate(value string) (*schema.Token, error) {
-	var token schema.Token
-	resp := middleware.APIResponse{
-		Data: &token,
-	}
-	err := c.doRequest("GET", fmt.Sprintf("/tokens/%s", value), nil, &resp)
-	return &token, err
-}
-
 // CreateRequest creates a request. The return values are the ID for the created
 // request and an error.
 func (c *Client) CreateRequest(fromUser, toUser int) (int, error) {

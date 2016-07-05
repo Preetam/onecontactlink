@@ -79,11 +79,11 @@ func main() {
 	service.Route("GET", "/login", "serves login page", func(w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "login", nil)
 	})
-	service.Route("POST", "/login", "serves login form submit", servePostLogin)
+	service.Route("POST", "/login", "serves login form submit", siesta.Compose(verifyCaptcha, servePostLogin))
 
 	// contact link pages
 	service.Route("GET", "/r/:link", "handles contact request page", serveGetRequest)
-	service.Route("POST", "/r/:link", "handles contact request submission", servePostRequest)
+	service.Route("POST", "/r/:link", "handles contact request submission", siesta.Compose(verifyCaptcha, servePostRequest))
 
 	// manage link
 	service.Route("GET", "/m/:link", "handles request management page", serveManageRequest)
