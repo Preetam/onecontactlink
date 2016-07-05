@@ -13,9 +13,9 @@ import (
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
+	"github.com/mailgun/mailgun-go"
 	// vendor
 	"github.com/VividCortex/siesta"
-	"github.com/mailgun/mailgun-go"
 )
 
 const (
@@ -37,22 +37,6 @@ func emailMessageReader(c siesta.Context, w http.ResponseWriter, r *http.Request
 	}
 }
 
-func sendEmailHandler(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-	mg := c.Get(MailgunContextKey).(mailgun.Mailgun)
-	msg := c.Get(messageKey).(client.EmailMessage)
-	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
-
-	err := sendMail(mg, msg)
-	if err != nil {
-		requestData.StatusCode = http.StatusInternalServerError
-		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
-		return
-	}
-
-	requestData.StatusCode = http.StatusNoContent
-}
-
 func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	mg := c.Get(MailgunContextKey).(mailgun.Mailgun)
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
@@ -72,6 +56,11 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	mainEmail := ""
 	log.Printf("[Req %s] using auth email %v", requestData.RequestID, *emailAddress)
 	// Get the main email address of user with the given email address
+	log.Println("SELECT users.id, users.name, e2.address FROM emails e1"+
+		" JOIN users on users.id = e1.user"+
+		" JOIN emails e2 ON users.main_email = e2.id"+
+		" WHERE e1.address = ? AND e1.deleted = 0 AND users.deleted = 0 AND users.status = ?",
+		*emailAddress, schema.UserStatusActive)
 	err = requestData.DB.QueryRow("SELECT users.id, users.name, e2.address FROM emails e1"+
 		" JOIN users on users.id = e1.user"+
 		" JOIN emails e2 ON users.main_email = e2.id"+

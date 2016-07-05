@@ -4,7 +4,6 @@ const (
 	UserCodeSize        = 6
 	RequestLinkCodeSize = 8
 	RequestCodeSize     = 32
-	TokenSize           = 32
 )
 
 const (
@@ -34,15 +33,6 @@ type Email struct {
 	ID      int    `json:"id"`
 	Address string `json:"address"`
 	User    int    `json:"user"`
-	Created int    `json:"created"`
-	Updated int    `json:"updated"`
-	Deleted int    `json:"deleted"`
-}
-
-type Token struct {
-	ID      int    `json:"id"`
-	User    int    `json:"user"`
-	Value   string `json:"value"`
 	Created int    `json:"created"`
 	Updated int    `json:"updated"`
 	Deleted int    `json:"deleted"`

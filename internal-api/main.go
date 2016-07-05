@@ -9,10 +9,10 @@ import (
 	// base
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/web/linktoken"
+	"github.com/mailgun/mailgun-go"
 	// vendor
 	"github.com/VividCortex/siesta"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/mailgun/mailgun-go"
 )
 
 var (
@@ -70,10 +70,6 @@ func main() {
 			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 			requestData.StatusCode = http.StatusNoContent
 		})
-
-	service.Route("GET", "/tokens/:token", "gets a token", getToken)
-	service.Route("POST", "/misc/sendMail", "sends an email",
-		siesta.Compose(emailMessageReader, sendEmailHandler))
 
 	// Users
 	service.Route("GET", "/users/:id", "gets a user", getUserByID)
