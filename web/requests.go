@@ -418,7 +418,7 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func verifyCaptcha(c siesta.Context, r *http.Request, w http.ResponseWriter, q func()) {
+func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q func()) {
 	if DevMode {
 		return
 	}
