@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	// std
 	"database/sql"
 )
 

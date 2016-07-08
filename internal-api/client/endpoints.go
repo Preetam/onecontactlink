@@ -1,12 +1,11 @@
 package client
 
 import (
-	// std
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-	// base
+
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 )

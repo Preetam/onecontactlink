@@ -1,21 +1,19 @@
 package main
 
 import (
-	// std
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
-	// base
+
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
-	"github.com/mailgun/mailgun-go"
-	// vendor
 	"github.com/VividCortex/siesta"
+	"github.com/mailgun/mailgun-go"
 )
 
 const (

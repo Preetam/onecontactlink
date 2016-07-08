@@ -11,6 +11,7 @@
     - nodejs
     - build-essential
     - npm
+  become: yes
 
 - name: create home go directory
   file: path=/home/ubuntu/go state=directory

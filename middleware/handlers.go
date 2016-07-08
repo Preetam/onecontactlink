@@ -1,13 +1,12 @@
 package middleware
 
 import (
-	// std
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
-	// vendor
+
 	"github.com/VividCortex/siesta"
 )
 

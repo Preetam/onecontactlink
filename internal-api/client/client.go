@@ -1,7 +1,6 @@
 package client
 
 import (
-	// std
 	"bytes"
 	"encoding/json"
 	"fmt"
