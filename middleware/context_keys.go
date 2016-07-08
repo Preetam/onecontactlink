@@ -8,4 +8,5 @@ const (
 	ResponseErrorKey = "response-error"
 	ResponseKey      = "response"
 	RequestDataKey   = "request-data"
+	CaptchaResult    = "captcha-result"
 )

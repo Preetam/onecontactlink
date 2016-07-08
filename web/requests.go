@@ -9,9 +9,16 @@ import (
 	"time"
 
 	"github.com/Preetam/onecontactlink/internal-api/client"
+	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
 	"github.com/VividCortex/siesta"
+)
+
+var (
+	captchaResultOK    = 0
+	captchaResultFail  = 1
+	captchaResultError = 2
 )
 
 func serveGetRequest(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +71,24 @@ func serveGetRequest(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func servePostRequest(w http.ResponseWriter, r *http.Request) {
+func servePostRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	captchaResult := extractCaptchaResult(c)
+	switch captchaResult {
+	case captchaResultOK:
+		// nothing to do
+	case captchaResultFail:
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "request", map[string]string{
+			"Error": "Invalid CAPTCHA.",
+		})
+		return
+	case captchaResultError:
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "request", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
 	params := &siesta.Params{}
 	nameStr := params.String("name", "", "name")
 	emailStr := params.String("email", "", "email")
@@ -341,13 +365,30 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func servePostLogin(w http.ResponseWriter, r *http.Request) {
+func servePostLogin(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	captchaResult := extractCaptchaResult(c)
+	switch captchaResult {
+	case captchaResultOK:
+		// nothing to do
+	case captchaResultFail:
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "login", map[string]string{
+			"Error": "Invalid CAPTCHA.",
+		})
+		return
+	case captchaResultError:
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "login", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
 	params := &siesta.Params{}
 	emailStr := params.String("email", "", "email")
 	err := params.Parse(r.Form)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "request", map[string]string{
+		templ.ExecuteTemplate(w, "login", map[string]string{
 			"Error": "Invalid parameters.",
 		})
 		return
@@ -416,13 +457,30 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 }
 
 func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	captchaResult := extractCaptchaResult(c)
+	switch captchaResult {
+	case captchaResultOK:
+		// nothing to do
+	case captchaResultFail:
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "createAccount", map[string]string{
+			"Error": "Invalid CAPTCHA.",
+		})
+		return
+	case captchaResultError:
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "createAccount", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
 	params := &siesta.Params{}
 	nameStr := params.String("name", "", "name")
 	emailStr := params.String("email", "", "email")
 	err := params.Parse(r.Form)
 	if err != nil || *nameStr == "" || *emailStr == "" {
 		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
+		templ.ExecuteTemplate(w, "createAccount", map[string]string{
 			"Error": "Invalid name or email.",
 		})
 		return
@@ -432,7 +490,7 @@ func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Req
 	email, err := internalAPIClient.GetEmail(*emailStr)
 	if err != nil && err != client.ErrNotFound {
 		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
+		templ.ExecuteTemplate(w, "createAccount", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
 		return
@@ -444,7 +502,7 @@ func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Req
 		user, err := internalAPIClient.CreateUser(schema.NewUser(*nameStr, *emailStr))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			templ.ExecuteTemplate(w, "invalid", map[string]string{
+			templ.ExecuteTemplate(w, "createAccount", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
 			return
@@ -455,7 +513,7 @@ func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Req
 		user, err := internalAPIClient.GetUser(email.User)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			templ.ExecuteTemplate(w, "invalid", map[string]string{
+			templ.ExecuteTemplate(w, "createAccount", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
 			return
@@ -576,8 +634,9 @@ func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q func()) {
+func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if DevMode {
+		c.Set(middleware.CaptchaResult, captchaResultOK)
 		return
 	}
 
@@ -585,20 +644,12 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q f
 	recaptchaResponse := params.String("g-recaptcha-response", "", "reCAPTCHA response")
 	err := params.Parse(r.Form)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
-			"Error": "Missing CAPTCHA parameter.",
-		})
-		q()
+		c.Set(middleware.CaptchaResult, captchaResultFail)
 		return
 	}
 
 	if *recaptchaResponse == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
-			"Error": "Bad CAPTCHA",
-		})
-		q()
+		c.Set(middleware.CaptchaResult, captchaResultFail)
 		return
 	}
 
@@ -608,11 +659,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q f
 		"response": []string{*recaptchaResponse},
 	})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
-			"Warning": "Something went wrong. Please try again.",
-		})
-		q()
+		c.Set(middleware.CaptchaResult, captchaResultError)
 		return
 	}
 	recaptchaAPIResponse := struct {
@@ -622,19 +669,19 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q f
 	defer resp.Body.Close()
 	err = json.NewDecoder(resp.Body).Decode(&recaptchaAPIResponse)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
-			"Warning": "Something went wrong. Please try again.",
-		})
-		q()
+		c.Set(middleware.CaptchaResult, captchaResultError)
 		return
 	}
 	if !recaptchaAPIResponse.Success {
-		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "invalid", map[string]string{
-			"Error": "Couldn't verify CAPTCHA. Please try again.",
-		})
-		q()
+		c.Set(middleware.CaptchaResult, captchaResultFail)
 		return
 	}
+}
+
+func extractCaptchaResult(c siesta.Context) int {
+	result, ok := c.Get(middleware.CaptchaResult).(int)
+	if !ok {
+		return captchaResultError
+	}
+	return result
 }
