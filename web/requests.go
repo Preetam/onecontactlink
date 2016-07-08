@@ -456,20 +456,20 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	captchaResult := extractCaptchaResult(c)
 	switch captchaResult {
 	case captchaResultOK:
 		// nothing to do
 	case captchaResultFail:
 		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "createAccount", map[string]string{
+		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Invalid CAPTCHA.",
 		})
 		return
 	case captchaResultError:
 		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "createAccount", map[string]string{
+		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
 		return
@@ -480,7 +480,7 @@ func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Req
 	err := params.Parse(r.Form)
 	if err != nil || *nameStr == "" || *emailStr == "" {
 		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "createAccount", map[string]string{
+		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Invalid name or email.",
 		})
 		return
@@ -490,7 +490,7 @@ func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Req
 	email, err := internalAPIClient.GetEmail(*emailStr)
 	if err != nil && err != client.ErrNotFound {
 		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "createAccount", map[string]string{
+		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
 		return
@@ -502,7 +502,7 @@ func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Req
 		user, err := internalAPIClient.CreateUser(schema.NewUser(*nameStr, *emailStr))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			templ.ExecuteTemplate(w, "createAccount", map[string]string{
+			templ.ExecuteTemplate(w, "signup", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
 			return
@@ -513,7 +513,7 @@ func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Req
 		user, err := internalAPIClient.GetUser(email.User)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			templ.ExecuteTemplate(w, "createAccount", map[string]string{
+			templ.ExecuteTemplate(w, "signup", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
 			return

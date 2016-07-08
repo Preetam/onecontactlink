@@ -89,10 +89,10 @@ func main() {
 	// auth link
 	service.Route("GET", "/auth/:link", "handles authentication links", serveAuth)
 
-	service.Route("GET", "/createAccount", "serves account creation page", func(w http.ResponseWriter, r *http.Request) {
-		templ.ExecuteTemplate(w, "createAccount", nil)
+	service.Route("GET", "/signup", "serves account creation page", func(w http.ResponseWriter, r *http.Request) {
+		templ.ExecuteTemplate(w, "signup", nil)
 	})
-	service.Route("POST", "/createAccount", "serves account creation submission", siesta.Compose(verifyCaptcha, servePostCreateAccount))
+	service.Route("POST", "/signup", "serves account creation submission", siesta.Compose(verifyCaptcha, servePostSignup))
 
 	// activation link
 	service.Route("GET", "/activate/:link", "handles activation links", serveActivate)

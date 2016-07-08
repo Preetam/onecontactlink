@@ -1,9 +1,9 @@
-{{- define "createAccount" -}}
+{{- define "signup" -}}
 
 {{- template "header" . -}}
 <div class="row">
   <div class="twelve columns">
-    <h2>Create account</h2>
+    <h2>Sign up</h2>
     <p>Please fill out the form to create an account.</p>
     <form method="POST">
       <div class="row">
@@ -13,7 +13,7 @@
         </div>
         <div class="six columns">
           <label for="exampleEmailInput">Your email</label>
-          <input class="u-full-width" type="email" placeholder="test@mailbox.com" id="exampleEmailInput" name="email">
+          <input class="u-full-width" type="email" placeholder="test@mailbox.com" name="email">
         </div>
       </div>
       <div class="row">
