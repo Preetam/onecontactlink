@@ -586,7 +586,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q f
 	err := params.Parse(r.Form)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "request", map[string]string{
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Missing CAPTCHA parameter.",
 		})
 		q()
@@ -595,7 +595,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q f
 
 	if *recaptchaResponse == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "login", map[string]string{
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Bad CAPTCHA",
 		})
 		q()
@@ -609,7 +609,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q f
 	})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "login", map[string]string{
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Warning": "Something went wrong. Please try again.",
 		})
 		q()
@@ -623,7 +623,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q f
 	err = json.NewDecoder(resp.Body).Decode(&recaptchaAPIResponse)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		templ.ExecuteTemplate(w, "login", map[string]string{
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Warning": "Something went wrong. Please try again.",
 		})
 		q()
@@ -631,7 +631,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request, q f
 	}
 	if !recaptchaAPIResponse.Success {
 		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "login", map[string]string{
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Couldn't verify CAPTCHA. Please try again.",
 		})
 		q()
