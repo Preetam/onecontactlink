@@ -493,6 +493,7 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
+		log.Println(err)
 		return
 	}
 
@@ -505,6 +506,7 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			templ.ExecuteTemplate(w, "signup", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
+			log.Println(err)
 			return
 		}
 		userToReceiveActivationEmail = user.ID
@@ -516,6 +518,7 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			templ.ExecuteTemplate(w, "signup", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
+			log.Println(err)
 			return
 		}
 
