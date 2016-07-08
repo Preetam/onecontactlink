@@ -10,6 +10,7 @@
     - python-mysqldb
     - nodejs
     - build-essential
+    - npm
 
 - name: create home go directory
   file: path=/home/ubuntu/go state=directory
