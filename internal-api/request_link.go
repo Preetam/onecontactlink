@@ -1,13 +1,11 @@
 package main
 
 import (
-	// std
 	"log"
 	"net/http"
-	// base
+
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
-	// vendor
 	"github.com/VividCortex/siesta"
 )
 

@@ -1,18 +1,16 @@
 package main
 
 import (
-	// std
 	"flag"
 	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
 	"time"
-	// base
+
 	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/web/linktoken"
-	// vendor
 	"github.com/VividCortex/siesta"
 )
 
@@ -79,7 +77,7 @@ func main() {
 	service.Route("GET", "/login", "serves login page", func(w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "login", nil)
 	})
-	service.Route("POST", "/login", "serves login form submit", siesta.Compose(verifyCaptcha, servePostLogin))
+	service.Route("POST", "/login", "serves login form submission", siesta.Compose(verifyCaptcha, servePostLogin))
 
 	// contact link pages
 	service.Route("GET", "/r/:link", "handles contact request page", serveGetRequest)
@@ -90,6 +88,14 @@ func main() {
 
 	// auth link
 	service.Route("GET", "/auth/:link", "handles authentication links", serveAuth)
+
+	service.Route("GET", "/createAccount", "serves account creation page", func(w http.ResponseWriter, r *http.Request) {
+		templ.ExecuteTemplate(w, "createAccount", nil)
+	})
+	service.Route("POST", "/createAccount", "serves account creation submission", siesta.Compose(verifyCaptcha, servePostCreateAccount))
+
+	// activation link
+	service.Route("GET", "/activate/:link", "handles activation links", serveActivate)
 
 	if DevMode {
 		service.Route("GET", "/dev/auth/:user", "handles dev mode login as a user", serveDevModeAuth)

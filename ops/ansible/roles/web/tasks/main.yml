@@ -6,6 +6,14 @@
 - include: install_caddy.yml
   when: caddy_bin.stat.exists == False
 
+- name: install uglify-js
+  shell: npm install -g uglify-js
+  become: yes
+
+- name: install cleancss
+  shell: npm install -g clean-css
+  become: yes
+
 - name: go get project
   shell: go get github.com/Preetam/onecontactlink || true
   environment:

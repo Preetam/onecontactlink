@@ -1,0 +1,32 @@
+{{- define "createAccount" -}}
+
+{{- template "header" . -}}
+<div class="row">
+  <div class="twelve columns">
+    <h2>Create account</h2>
+    <p>Please fill out the form to create an account.</p>
+    <form method="POST">
+      <div class="row">
+        <div class="six columns">
+          <label for="nameInput">Your name</label>
+          <input class="u-full-width" type="text" placeholder="Richard Hendricks" name="name">
+        </div>
+        <div class="six columns">
+          <label for="exampleEmailInput">Your email</label>
+          <input class="u-full-width" type="email" placeholder="test@mailbox.com" id="exampleEmailInput" name="email">
+        </div>
+      </div>
+      <div class="row">
+        <div class="twelve columns">
+          <div class="g-recaptcha" data-sitekey="6Le3rhoTAAAAAK6pdo1YQSXzhnv7TlLjqtcTOlHU"
+            style="margin-bottom: 1em">
+          </div>
+          <input class="button-primary" type="submit" value="Submit">
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{{- template "footer" . -}}
+
+{{- end -}}

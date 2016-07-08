@@ -1,18 +1,16 @@
 package main
 
 import (
-	// std
 	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
-	// base
+
 	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
-	// vendor
 	"github.com/VividCortex/siesta"
 )
 
@@ -307,7 +305,6 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	// get user information
 	_, err = internalAPIClient.GetUser(userID)
 	if err != nil {
-		// Token expired.
 		w.WriteHeader(http.StatusInternalServerError)
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
@@ -415,6 +412,167 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 
 	templ.ExecuteTemplate(w, "success", map[string]string{
 		"Success": "Logged in!",
+	})
+}
+
+func servePostCreateAccount(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	params := &siesta.Params{}
+	nameStr := params.String("name", "", "name")
+	emailStr := params.String("email", "", "email")
+	err := params.Parse(r.Form)
+	if err != nil || *nameStr == "" || *emailStr == "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Invalid name or email.",
+		})
+		return
+	}
+
+	// Check if email exists.
+	email, err := internalAPIClient.GetEmail(*emailStr)
+	if err != nil && err != client.ErrNotFound {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	userToReceiveActivationEmail := 0
+	if err == client.ErrNotFound {
+		// Email not found. Create a user with that email address.
+		user, err := internalAPIClient.CreateUser(schema.NewUser(*nameStr, *emailStr))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			templ.ExecuteTemplate(w, "invalid", map[string]string{
+				"Error": "Something went wrong. Please try again.",
+			})
+			return
+		}
+		userToReceiveActivationEmail = user.ID
+	} else {
+		// Email already exists. Check if it's associated with an active user.
+		user, err := internalAPIClient.GetUser(email.User)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			templ.ExecuteTemplate(w, "invalid", map[string]string{
+				"Error": "Something went wrong. Please try again.",
+			})
+			return
+		}
+
+		switch user.Status {
+		case schema.UserStatusDefault:
+			// User hasn't been activated.
+			userToReceiveActivationEmail = user.ID
+		case schema.UserStatusActive:
+			w.WriteHeader(http.StatusConflict)
+			templ.ExecuteTemplate(w, "invalid", map[string]string{
+				"Error": "This email address is already associated with an active user.",
+			})
+			return
+		}
+	}
+
+	// Send activation email.
+	err = internalAPIClient.SendActivationEmail(userToReceiveActivationEmail)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusInternalServerError)
+	templ.ExecuteTemplate(w, "success", map[string]string{
+		"Success": "We've sent you an email to activate your account.",
+	})
+}
+
+func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	params := &siesta.Params{}
+	linkStr := params.String("link", "", "link token")
+	err := params.Parse(r.Form)
+	invalidLink := func() {
+		w.WriteHeader(http.StatusNotFound)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Not a valid link",
+		})
+		return
+	}
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	linkToken, err := tokenCodec.DecodeToken(*linkStr, new(linktoken.ActivationTokenData))
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	// Check if token expired
+	if linkToken.Expires <= int(time.Now().Unix()) {
+		// Token expired.
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "This link has expired.",
+		})
+		return
+	}
+
+	// extract user ID
+	userID := linkToken.Data.(*linktoken.ActivationTokenData).ActivateUser
+
+	// activate user
+	err = internalAPIClient.ActivateUser(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	// get user information
+	_, err = internalAPIClient.GetUser(userID)
+	if err != nil {
+		// Token expired.
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	userToken := linktoken.NewLinkToken(&linktoken.UserTokenData{
+		User: userID,
+	}, int(time.Now().Unix()+86400))
+
+	// Set a cookie
+	token, err := tokenCodec.EncodeToken(userToken)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ocl",
+		Value:    token,
+		Domain:   CookieDomain,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   !DevMode,
+	})
+
+	w.Header().Add("Refresh", "2; /app")
+
+	templ.ExecuteTemplate(w, "success", map[string]string{
+		"Success": "Activated! Redirecting you to the app...",
 	})
 }
 

@@ -6,6 +6,10 @@
       command: git pull
       args:
           chdir: /home/ubuntu/onecontactlink
+    - name: build web assets
+      command: make all
+      args:
+          chdir: /home/ubuntu/onecontactlink/web
     - name: build web
       command: go build
       args:

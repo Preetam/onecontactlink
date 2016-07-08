@@ -1,15 +1,13 @@
 package main
 
 import (
-	// std
 	"flag"
 	"log"
 	"net/http"
-	// base
+
 	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/web/linktoken"
-	// vendor
 	"github.com/VividCortex/siesta"
 )
 
