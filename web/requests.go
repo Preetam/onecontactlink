@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -265,7 +264,6 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
-		log.Println(err)
 		return
 
 	}
@@ -277,7 +275,6 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 			templ.ExecuteTemplate(w, "invalid", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
-			log.Println(err)
 			return
 		}
 
@@ -424,7 +421,6 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	// get user information
 	_, err = internalAPIClient.GetUser(*userID)
 	if err != nil {
-		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
@@ -434,7 +430,6 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 
 	token, err := tokenCodec.EncodeToken(linkToken)
 	if err != nil {
-		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
@@ -493,7 +488,6 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
-		log.Println(err)
 		return
 	}
 
@@ -506,7 +500,6 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			templ.ExecuteTemplate(w, "signup", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
-			log.Println(err)
 			return
 		}
 		userToReceiveActivationEmail = user.ID
@@ -518,7 +511,6 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			templ.ExecuteTemplate(w, "signup", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
-			log.Println(err)
 			return
 		}
 
@@ -679,6 +671,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		c.Set(middleware.CaptchaResult, captchaResultFail)
 		return
 	}
+	c.Set(middleware.CaptchaResult, captchaResultOK)
 }
 
 func extractCaptchaResult(c siesta.Context) int {
