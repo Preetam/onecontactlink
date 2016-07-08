@@ -1,24 +1,15 @@
 ---
 
-- name: ensure traceroute is installed
-  apt: name=traceroute state=latest
-  become: yes
-
-- name: ensure git is installed
-  apt: name=git state=latest
-  become: yes
-
-- name: ensure runit is installed
-  apt: name=runit state=latest
-  become: yes
-
-- name: ensure go is installed
-  apt: name=golang-go state=latest
-  become: yes
-
-- name: install python mysql module
-  apt: name=python-mysqldb state=latest
-  become: yes
+- name: install common packages
+  apt: name={{ item }} state=present
+  with_items:
+    - traceroute
+    - git
+    - runit
+    - golang-go
+    - python-mysqldb
+    - nodejs
+    - build-essential
 
 - name: create home go directory
   file: path=/home/ubuntu/go state=directory

@@ -85,6 +85,32 @@ func (c *Client) CreateUser(user *schema.User) (*schema.User, error) {
 	return user, nil
 }
 
+func (c *Client) ActivateUser(id int) error {
+	err := c.doRequest("POST", fmt.Sprintf("/users/%d/activate", id), nil, nil)
+	if err != nil {
+		if serverErr, ok := err.(ServerError); ok {
+			if serverErr == http.StatusNotFound {
+				return ErrNotFound
+			}
+		}
+		return err
+	}
+	return nil
+}
+
+func (c *Client) SendActivationEmail(id int) error {
+	err := c.doRequest("POST", fmt.Sprintf("/users/%d/sendActivationEmail", id), nil, nil)
+	if err != nil {
+		if serverErr, ok := err.(ServerError); ok {
+			if serverErr == http.StatusNotFound {
+				return ErrNotFound
+			}
+		}
+		return err
+	}
+	return nil
+}
+
 func (c *Client) GetEmail(address string) (*schema.Email, error) {
 	email := schema.Email{}
 	resp := middleware.APIResponse{
@@ -100,6 +126,15 @@ func (c *Client) GetEmail(address string) (*schema.Email, error) {
 		return nil, err
 	}
 	return &email, nil
+}
+
+func (c *Client) ValidateEmail(address string) (bool, error) {
+	isValid := false
+	resp := middleware.APIResponse{
+		Data: &isValid,
+	}
+	err := c.doRequest("POST", fmt.Sprintf("/emails/%s/validate", address), nil, &resp)
+	return isValid, err
 }
 
 func (c *Client) SendRequestEmail(id int) error {

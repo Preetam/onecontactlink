@@ -71,6 +71,22 @@ func (d *RequestTokenData) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &x)
 }
 
+type ActivationTokenData struct {
+	ActivateUser int `json:"activateUser"`
+}
+
+func (d *ActivationTokenData) MarshalJSON() ([]byte, error) {
+	type X ActivationTokenData
+	x := X(*d)
+	return json.Marshal(x)
+}
+
+func (d *ActivationTokenData) UnmarshalJSON(data []byte) error {
+	type X *ActivationTokenData
+	x := X(d)
+	return json.Unmarshal(data, &x)
+}
+
 func NewLinkToken(data TokenData, expires int) *LinkToken {
 	return &LinkToken{
 		Data:    data,
