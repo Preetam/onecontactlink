@@ -6,6 +6,9 @@ var user = m.request({
 	},
 	unwrapError: function(response) {
 		return response.error;
+	},
+	config: function(xhr) {
+		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 	}
 });
 
@@ -17,6 +20,9 @@ var contactLink = m.request({
 	},
 	unwrapError: function(response) {
 		return response.error;
+	},
+	config: function(xhr) {
+		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 	}
 });
 
