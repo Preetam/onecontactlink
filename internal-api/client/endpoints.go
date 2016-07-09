@@ -51,6 +51,28 @@ func (c *Client) GetRequestLinkByCode(code string) (*schema.RequestLink, error) 
 	}
 	err := c.doRequest("GET", fmt.Sprintf("/links/requestLinks/%s", code), nil, &resp)
 	if err != nil {
+		if serverErr, ok := err.(ServerError); ok {
+			if serverErr == http.StatusNotFound {
+				return nil, ErrNotFound
+			}
+		}
+		return nil, err
+	}
+	return &requestLink, nil
+}
+
+func (c *Client) GetRequestLinkByUser(user int) (*schema.RequestLink, error) {
+	requestLink := schema.RequestLink{}
+	resp := middleware.APIResponse{
+		Data: &requestLink,
+	}
+	err := c.doRequest("GET", fmt.Sprintf("/users/%d/requestLink", user), nil, &resp)
+	if err != nil {
+		if serverErr, ok := err.(ServerError); ok {
+			if serverErr == http.StatusNotFound {
+				return nil, ErrNotFound
+			}
+		}
 		return nil, err
 	}
 	return &requestLink, nil

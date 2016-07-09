@@ -37,3 +37,32 @@ func getRequestLinkByCode(c siesta.Context, w http.ResponseWriter, r *http.Reque
 	}
 	requestData.ResponseData = requestLink
 }
+
+func getRequestLinkByUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+
+	var params siesta.Params
+	user := params.Int("id", 0, "user ID")
+	err := params.Parse(r.Form)
+	if err != nil {
+		requestData.StatusCode = http.StatusBadRequest
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	requestLink := schema.RequestLink{
+		User: *user,
+	}
+	err = requestData.DB.QueryRow("SELECT id, code, created, updated, deleted FROM request_links"+
+		" WHERE user = ? AND deleted = 0", requestLink.User).
+		Scan(&requestLink.ID, &requestLink.Code, &requestLink.Created,
+			&requestLink.Updated)
+	if err != nil {
+		requestData.StatusCode = http.StatusNotFound
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+	requestData.ResponseData = requestLink
+}

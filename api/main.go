@@ -76,6 +76,29 @@ func main() {
 			requestData.ResponseData = user
 		})
 
+	service.Route("GET", "/contactLink", "user",
+		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+			userID, ok := c.Get("user").(int)
+			if !ok {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			user, err := internalAPIClient.GetUser(userID)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			requestLink, err := internalAPIClient.GetRequestLinkByUser(userID)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			requestData.ResponseData = "http://www.onecontact.link/r/" + user.Code + "-" + requestLink.Code
+		})
+
 	log.Println("listening on", *addr)
 	log.Fatal(http.ListenAndServe(*addr, service))
 }
