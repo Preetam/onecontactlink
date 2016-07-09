@@ -37,7 +37,7 @@ var home = {
 				m("p", [
 					m("strong", "OneContactLink:"),
 					m("span", " "),
-					m("a[href='" + contactLinkAddr + "'", contactLinkAddr)
+					m("a", {href: contactLinkAddr}, contactLinkAddr)
 				])
 			])
 		]);
