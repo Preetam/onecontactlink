@@ -54,7 +54,7 @@ func getRequestLinkByUser(c siesta.Context, w http.ResponseWriter, r *http.Reque
 	requestLink := schema.RequestLink{
 		User: *user,
 	}
-	err = requestData.DB.QueryRow("SELECT id, code, created, updated, deleted FROM request_links"+
+	err = requestData.DB.QueryRow("SELECT id, code, created, updated FROM request_links"+
 		" WHERE user = ? AND deleted = 0", requestLink.User).
 		Scan(&requestLink.ID, &requestLink.Code, &requestLink.Created,
 			&requestLink.Updated)
