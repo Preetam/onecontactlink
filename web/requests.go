@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -639,6 +640,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	recaptchaResponse := params.String("g-recaptcha-response", "", "reCAPTCHA response")
 	err := params.Parse(r.Form)
 	if err != nil {
+		log.Println(err)
 		c.Set(middleware.CaptchaResult, captchaResultFail)
 		return
 	}
@@ -654,6 +656,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		"response": []string{*recaptchaResponse},
 	})
 	if err != nil {
+		log.Println(err)
 		c.Set(middleware.CaptchaResult, captchaResultError)
 		return
 	}
@@ -664,6 +667,7 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 	err = json.NewDecoder(resp.Body).Decode(&recaptchaAPIResponse)
 	if err != nil {
+		log.Println(err)
 		c.Set(middleware.CaptchaResult, captchaResultError)
 		return
 	}
