@@ -1,9 +1,3 @@
--- MySQL dump 10.13  Distrib 5.6.12, for osx10.7 (x86_64)
---
--- Host: localhost    Database: onecontactlink
--- ------------------------------------------------------
--- Server version	5.7.11
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -26,6 +20,7 @@ CREATE TABLE `emails` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `address` varchar(255) NOT NULL,
   `user` int(10) unsigned NOT NULL DEFAULT '0',
+  `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL,
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
@@ -72,38 +67,6 @@ LOCK TABLES `request_links` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `requests`
---
-
-DROP TABLE IF EXISTS `requests`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `requests` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `code` varchar(32) NOT NULL,
-  `from_user` int(10) NOT NULL DEFAULT '0',
-  `to_user` int(10) NOT NULL DEFAULT '0',
-  `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `email_sent` int(10) unsigned NOT NULL DEFAULT '0',
-  `created` int(10) unsigned NOT NULL,
-  `updated` int(10) unsigned NOT NULL,
-  `deleted` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `from_to` (`from_user`,`to_user`),
-  UNIQUE KEY `code_to` (`code`,`to_user`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `requests`
---
-
-LOCK TABLES `requests` WRITE;
-/*!40000 ALTER TABLE `requests` DISABLE KEYS */;
-/*!40000 ALTER TABLE `requests` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `schema_version`
 --
 
@@ -123,7 +86,7 @@ CREATE TABLE `schema_version` (
 
 LOCK TABLES `schema_version` WRITE;
 /*!40000 ALTER TABLE `schema_version` DISABLE KEYS */;
-INSERT INTO `schema_version` VALUES (1,1462074685);
+INSERT INTO `schema_version` VALUES (1,1469161416),(2,1469161416);
 /*!40000 ALTER TABLE `schema_version` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -167,4 +130,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-04-30 23:52:04
+-- Dump completed on 2016-07-22  0:23:51

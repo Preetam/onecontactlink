@@ -18,6 +18,11 @@ const (
 	UserStatusActive
 )
 
+const (
+	EmailStatusDefault = iota
+	EmailStatusActive
+)
+
 type User struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
@@ -33,6 +38,7 @@ type Email struct {
 	ID      int    `json:"id"`
 	Address string `json:"address"`
 	User    int    `json:"user"`
+	Status  int    `json:"status"`
 	Created int    `json:"created"`
 	Updated int    `json:"updated"`
 	Deleted int    `json:"deleted"`

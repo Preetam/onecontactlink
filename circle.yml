@@ -16,6 +16,7 @@ database:
     - mysql -e "DROP DATABASE IF EXISTS onecontactlink_test; CREATE DATABASE onecontactlink_test;"
     - mysql -e "CREATE USER 'testuser'@'localhost' IDENTIFIED BY '';"
     - mysql -e "GRANT ALL ON onecontactlink_test.* TO 'testuser'@'localhost' IDENTIFIED BY '';"
+    - mysql -utestuser -A onecontactlink_test < schema/clean-setup.sql
     - mysql -utestuser -A onecontactlink_test < schema/test-setup.sql
 
 
