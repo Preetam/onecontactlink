@@ -76,6 +76,23 @@ func main() {
 			requestData.ResponseData = user
 		})
 
+	service.Route("GET", "/emails", "get emails",
+		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+			userID, ok := c.Get("user").(int)
+			if !ok {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			emails, err := internalAPIClient.GetUserEmails(userID)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			requestData.ResponseData = emails
+		})
+
 	service.Route("GET", "/contactLink", "user",
 		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)

@@ -3,17 +3,13 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
-	"github.com/Preetam/onecontactlink/web/linktoken"
 	"github.com/VividCortex/siesta"
-	"github.com/mailgun/mailgun-go"
 )
 
 const (
@@ -199,12 +195,10 @@ func activateUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-	mg := c.Get(MailgunContextKey).(mailgun.Mailgun)
+func getEmailsForUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
-
 	var params siesta.Params
-	userID := params.Int("id", 0, "user ID")
+	userID := params.Int("id", 0, "User ID")
 	err := params.Parse(r.Form)
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
@@ -212,60 +206,28 @@ func sendActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Reques
 		log.Printf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
+	emails := []schema.Email{}
 
-	name := ""
-	status := 0
-	emailAddress := ""
-
-	err = requestData.DB.QueryRow("SELECT users.name, users.status, emails.address"+
-		" FROM users JOIN emails ON users.main_email = emails.id"+
-		" WHERE users.id = ?", *userID).Scan(&name, &status, &emailAddress)
+	rows, err := requestData.DB.Query("SELECT id, address, status, created, updated"+
+		" FROM emails WHERE user = ? AND deleted = 0", *userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			requestData.StatusCode = http.StatusNotFound
+		requestData.StatusCode = http.StatusInternalServerError
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		email := schema.Email{
+			User: *userID,
+		}
+		err = rows.Scan(&email.ID, &email.Address, &email.Status, &email.Created, &email.Updated)
+		if err != nil {
+			requestData.StatusCode = http.StatusInternalServerError
+			log.Printf("[Req %s] %v", requestData.RequestID, err)
 			return
 		}
-		requestData.StatusCode = http.StatusInternalServerError
-		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
-		return
+		emails = append(emails, email)
 	}
 
-	if status == schema.UserStatusActive {
-		// Request has not been approved
-		requestData.StatusCode = http.StatusNotModified
-		return
-	}
-
-	token, err := tokenCodec.EncodeToken(linktoken.NewLinkToken(&linktoken.ActivationTokenData{
-		ActivateUser: *userID,
-	}, int(time.Now().Unix()+86400)))
-	if err != nil {
-		requestData.StatusCode = http.StatusInternalServerError
-		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
-		return
-	}
-
-	messageContent := fmt.Sprintf(`Hi %s,
-
-Thanks for signing up. Click the following link to activate your account: https://www.onecontact.link/activate/%s
-
-That link will only be valid for 1 day.
-
-Cheers!
-https://www.onecontact.link/
-`, name, token)
-	err = sendMail(mg, client.EmailMessage{
-		From:    `"OneContactLink" <noreply@out.onecontact.link>`,
-		To:      emailAddress,
-		Subject: "Activate OneContactLink Account",
-		Content: messageContent,
-	})
-	if err != nil {
-		requestData.StatusCode = http.StatusInternalServerError
-		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
-		return
-	}
+	requestData.ResponseData = emails
 }

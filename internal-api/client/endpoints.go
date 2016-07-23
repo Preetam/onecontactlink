@@ -149,6 +149,18 @@ func (c *Client) GetEmail(address string) (*schema.Email, error) {
 	return &email, nil
 }
 
+func (c *Client) GetUserEmails(user int) ([]schema.Email, error) {
+	emails := []schema.Email{}
+	resp := middleware.APIResponse{
+		Data: &emails,
+	}
+	err := c.doRequest("GET", fmt.Sprintf("/users/%d/emails", user), nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return emails, nil
+}
+
 func (c *Client) ValidateEmail(address string) (bool, error) {
 	isValid := false
 	resp := middleware.APIResponse{
