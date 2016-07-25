@@ -242,11 +242,25 @@ These links expire in 1 day.
 Cheers!
 https://www.onecontact.link/
 `, receiverName, senderName, senderEmail, approveLink, rejectLink)
+	htmlMessageContent := fmt.Sprintf(`<p>Hi %s,</p>
+
+<p>%s (%s) has requested your contact information using OneContact.Link.</p>
+
+<p>Click on one of the following links to approve or reject this request.
+We'll send them this email address if you approve.</p>
+
+<p><a href='%s'>Approve</a></p>
+
+<p><a href='%'>Reject</a></p>
+
+<p>These links expire in 1 day.</p>
+`, receiverName, senderName, senderEmail, approveLink, rejectLink)
 	msg := client.EmailMessage{
-		From:    `"OneContactLink Notifications" <notify@out.onecontact.link>`,
-		To:      receiverEmail,
-		Subject: "OneContactLink request",
-		Content: messageContent,
+		From:        `"OneContactLink Notifications" <notify@out.onecontact.link>`,
+		To:          receiverEmail,
+		Subject:     "OneContactLink request",
+		Content:     messageContent,
+		HTMLContent: htmlMessageContent,
 	}
 	err = sendMail(mg, msg)
 	if err != nil {
@@ -403,11 +417,16 @@ func sendContactInfoMail(c siesta.Context, w http.ResponseWriter, r *http.Reques
 Cheers!
 https://www.onecontact.link/
 `, receiverName, requestedName, requestedEmail)
+	htmlMessageContent := fmt.Sprintf(`<p>Hi %s,</p>
+
+<p>%s has approved your contact request! You can reach them at <a href='mailto:%s'>%s</a>.</p>
+`, receiverName, requestedName, requestedEmail, requestedEmail)
 	err = sendMail(mg, client.EmailMessage{
-		From:    `"OneContactLink Notifications" <notify@out.onecontact.link>`,
-		To:      receiverEmail,
-		Subject: requestedName + "'s contact information via OneContactLink",
-		Content: messageContent,
+		From:        `"OneContactLink Notifications" <notify@out.onecontact.link>`,
+		To:          receiverEmail,
+		Subject:     requestedName + "'s contact information via OneContactLink",
+		Content:     messageContent,
+		HTMLContent: htmlMessageContent,
 	})
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError

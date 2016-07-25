@@ -12,6 +12,20 @@ var user = m.request({
 	}
 });
 
+var emails = m.request({
+	method: "GET",
+	url: "/api/v1/emails",
+	unwrapSuccess: function(response) {
+		return response.data;
+	},
+	unwrapError: function(response) {
+		return response.error;
+	},
+	config: function(xhr) {
+		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+	}
+});
+
 var contactLink = m.request({
 	method: "GET",
 	url: "/api/v1/contactLink",
@@ -29,6 +43,7 @@ var contactLink = m.request({
 var home = {
 	view: function() {
 		var userInfo = user();
+		var userEmails = emails();
 		var contactLinkAddr = contactLink();
 		if (!userInfo || !userInfo.name) {
 			window.location = '/login';
@@ -45,6 +60,13 @@ var home = {
 					m("span", " "),
 					m("a", {href: contactLinkAddr}, contactLinkAddr)
 				])
+			]),
+			m("ul", [
+				emails().map(function(email) {
+					return m("li", email.address +
+						(userInfo.mainEmail == email.address ? " (main)" : "") +
+						(email.status == 0 ? " (pending activation)" : ""));
+				})
 			])
 		]);
 	}
