@@ -16,10 +16,11 @@ var (
 )
 
 type EmailMessage struct {
-	From    string `json:"from"`
-	To      string `json:"to"`
-	Subject string `json:"subject"`
-	Content string `json:"content"`
+	From        string `json:"from"`
+	To          string `json:"to"`
+	Subject     string `json:"subject"`
+	Content     string `json:"content"`
+	HTMLContent string `json:"htmlContent"`
 }
 
 // CreateRequest creates a request. The return values are the ID for the created
@@ -147,6 +148,30 @@ func (c *Client) GetEmail(address string) (*schema.Email, error) {
 		return nil, err
 	}
 	return &email, nil
+}
+
+func (c *Client) CreateEmail(user int, address string) (*schema.Email, error) {
+	email := schema.Email{
+		User:    user,
+		Address: address,
+	}
+	resp := middleware.APIResponse{
+		Data: &email,
+	}
+	err := c.doRequest("POST", "/emails", email, &resp)
+	if err != nil {
+		if serverErr, ok := err.(ServerError); ok {
+			if serverErr == http.StatusConflict {
+				return nil, ErrConflict
+			}
+		}
+		return nil, err
+	}
+	return &email, nil
+}
+
+func (c *Client) ActivateEmail(address string) error {
+	return c.doRequest("POST", fmt.Sprintf("/emails/%s/activate", address), nil, nil)
 }
 
 func (c *Client) GetUserEmails(user int) ([]schema.Email, error) {

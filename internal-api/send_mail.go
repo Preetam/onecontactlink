@@ -70,15 +70,11 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		To:      mainEmail,
 		From:    `"OneContactLink Notifications" <notify@out.onecontact.link>`,
 		Subject: "OneContactLink Login Link",
-		Content: fmt.Sprintf(`Hi %s,
-
-Here's your login link. It'll be active for 15 minutes.
-
-%s
-
-Cheers!
-https://www.onecontact.link/
-`, userName, "https://www.onecontact.link/auth/"+tokenStr),
+		Content: fmt.Sprintf("Hi %s,\n\nHere's your login link. It'll be active for 15 minutes.\n\n"+
+			"%s", userName, "https://www.onecontact.link/auth/"+tokenStr),
+		HTMLContent: fmt.Sprintf("<p>Hi %s,</p><p>Click <a href='%s'>here</a> to log in.</p>"+
+			"<p>This link will only be active for 15 minutes.</p>",
+			userName, "https://www.onecontact.link/auth/"+tokenStr),
 	})
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
@@ -92,7 +88,13 @@ func sendMail(mg mailgun.Mailgun, msg client.EmailMessage) error {
 	var err error
 
 	if !DevMode {
-		_, _, err = mg.Send(mailgun.NewMessage(msg.From, msg.Subject, msg.Content, msg.To))
+		textContent := fmt.Sprintf(textEmailTemplate, msg.Content)
+		mailgunMessage := mailgun.NewMessage(msg.From, msg.Subject, textContent, msg.To)
+		if msg.HTMLContent != "" {
+			htmlContent := fmt.Sprintf(htmlEmailTemplate, msg.HTMLContent)
+			mailgunMessage.SetHtml(htmlContent)
+		}
+		_, _, err = mg.Send(mailgunMessage)
 	} else {
 		log.Printf(`Sending mail:
 From: %s
@@ -154,20 +156,18 @@ func sendActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	messageContent := fmt.Sprintf(`Hi %s,
-
-Thanks for signing up. Click the following link to activate your account: https://www.onecontact.link/activate/%s
-
-That link will only be valid for 1 day.
-
-Cheers!
-https://www.onecontact.link/
-`, name, token)
 	err = sendMail(mg, client.EmailMessage{
 		From:    `"OneContactLink" <noreply@out.onecontact.link>`,
 		To:      emailAddress,
 		Subject: "Activate OneContactLink Account",
-		Content: messageContent,
+		Content: fmt.Sprintf("Hi %s,\n\n"+
+			"Thanks for signing up. Click the following link to activate your account: https://www.onecontact.link/activate/%s\n\n"+
+			"That link will only be valid for 1 day.", name, token),
+		HTMLContent: fmt.Sprintf("<p>Hi %s,</p>"+
+			"<p>Thanks for signing up. Click "+
+			"<a href='https://www.onecontact.link/activate/%s'>here</a>"+
+			" to activate your account.</p>"+
+			"<p>That link will only be valid for 1 day.</p>", name, token),
 	})
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError

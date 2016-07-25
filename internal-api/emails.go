@@ -2,14 +2,76 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
+	"github.com/VividCortex/mysqlerr"
 	"github.com/VividCortex/siesta"
+	"github.com/go-sql-driver/mysql"
 	"github.com/mailgun/mailgun-go"
 )
+
+const (
+	emailKey = "request"
+)
+
+func readEmail(c siesta.Context, w http.ResponseWriter, r *http.Request, q func()) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+
+	var email schema.Email
+	err := json.NewDecoder(r.Body).Decode(&email)
+	if err == nil {
+		c.Set(emailKey, email)
+	} else {
+		requestData.StatusCode = http.StatusBadRequest
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		q()
+	}
+}
+
+func createEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+	email := c.Get(emailKey).(schema.Email)
+	if email.User == 0 || email.Address == "" {
+		requestData.StatusCode = http.StatusBadRequest
+		requestData.ResponseError = `missing user ID or email address`
+		return
+	}
+
+	now := time.Now().Unix()
+
+	result, err := requestData.DB.Exec("INSERT INTO emails (address, user, status, created, updated, deleted)"+
+		" VALUES (?, ?, ?, ?, ?, 0)",
+		email.Address, email.User, schema.EmailStatusDefault, now, now)
+	if err != nil {
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+			if mysqlErr.Number == mysqlerr.ER_DUP_ENTRY {
+				// already exists
+				requestData.StatusCode = http.StatusConflict
+				log.Printf("[Req %s] %v", requestData.RequestID, err)
+				return
+			}
+		}
+		// Some other error
+		requestData.StatusCode = http.StatusInternalServerError
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	lastID, err := result.LastInsertId()
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+	email.ID = int(lastID)
+	requestData.ResponseData = email
+}
 
 func getEmailByAddress(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
@@ -53,23 +115,12 @@ func activateEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := schema.Email{
-		Address: *address,
-	}
-	err = requestData.DB.QueryRow("SELECT id, user, created, updated FROM emails"+
-		" WHERE address = ? AND deleted = 0",
-		email.Address).Scan(&email.ID, &email.User, &email.Created, &email.Updated)
+	_, err = requestData.DB.Exec("UPDATE emails SET status = ? WHERE address = ? AND deleted = 0",
+		schema.EmailStatusActive, *address)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			requestData.StatusCode = http.StatusNotFound
-			log.Printf("[Req %s] %v", requestData.RequestID, err)
-			return
-		}
 		requestData.StatusCode = http.StatusInternalServerError
 		log.Printf("[Req %s] %v", requestData.RequestID, err)
-		return
 	}
-	requestData.ResponseData = email
 }
 
 func postValidateEmailAddress(c siesta.Context, w http.ResponseWriter, r *http.Request) {
