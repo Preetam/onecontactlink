@@ -22,5 +22,5 @@ database:
 
 test:
   override:
-    - go test -race ./...
+    - go test $(go list ./... | grep -v /vendor/)
     - go build ./...
