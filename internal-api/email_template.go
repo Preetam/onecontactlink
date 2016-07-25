@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 const textEmailTemplate = `%s
 
 Cheers!
@@ -9,7 +11,7 @@ Click on the following link to unsubscribe from any future messages:
 %%unsubscribe_url%%
 `
 
-const htmlEmailTemplate = `
+var htmlEmailTemplate = strings.Replace(strings.Replace(`
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -88,7 +90,7 @@ td {
 <body style="background-color: #eee;font-family: sans-serif;font-size: 14px;line-height: 1.5;padding: 1em;">
 <table class="container" style="border-spacing: 0;padding: 0;margin: 0 auto;background-color: #fff;max-width: 95%;">
   <tr class="header" style="border-spacing: 0;padding: 0;margin: 0;"><td style="border-spacing: 0;padding: 20px;margin: 0;text-align: center;background-color: #1C90F3;width: 100%;color: white;font-size: 20px;"><a href="#" style="color: white;text-decoration: none;">OneContact.Link</a></td></tr>
-  <tr style="border-spacing: 0;padding: 0;margin: 0;"><td style="border-spacing: 0;padding: 20px;margin: 0;">%s
+  <tr style="border-spacing: 0;padding: 0;margin: 0;"><td style="border-spacing: 0;padding: 20px;margin: 0;">__s__
   <p>Cheers,<br>OneContactLink</p>
   </td></tr>
   <tr class="footer" style="border-spacing: 0;padding: 0;margin: 0;"><td style="border-spacing: 0;padding: 0px 20px;margin: 0;text-align: center;background-color: #666;width: 100%;color: #ddd;font-size: 12px;">
@@ -99,7 +101,7 @@ td {
   </td></tr>
 </table>
 
-<div class="unsubscribe" style="line-height: 3;font-size: 12px;text-align: center;color: #888;"><a href="%%unsubscribe_url%%" style="color: #888;">Unsubscribe</a> from these emails.</div>
+<div class="unsubscribe" style="line-height: 3;font-size: 12px;text-align: center;color: #888;"><a href="%unsubscribe_url%" style="color: #888;">Unsubscribe</a> from these emails.</div>
 </body>
 </html>
-`
+`, "%", "%%", -1), "__s__", "%s", -1)
