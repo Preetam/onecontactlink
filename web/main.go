@@ -94,8 +94,9 @@ func main() {
 	})
 	service.Route("POST", "/signup", "serves account creation submission", siesta.Compose(verifyCaptcha, servePostSignup))
 
-	// activation link
+	// activation links
 	service.Route("GET", "/activate/:link", "handles activation links", serveActivate)
+	service.Route("GET", "/activate-email/:link", "handles email activation links", serveActivateEmail)
 
 	if DevMode {
 		service.Route("GET", "/dev/auth/:user", "handles dev mode login as a user", serveDevModeAuth)

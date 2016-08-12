@@ -108,7 +108,7 @@ Content:
 	return err
 }
 
-func sendActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+func sendUserActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	mg := c.Get(MailgunContextKey).(mailgun.Mailgun)
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 

@@ -72,7 +72,7 @@ func main() {
 	// Users
 	service.Route("GET", "/users/:id", "gets a user", getUserByID)
 	service.Route("POST", "/users/:id/activate", "activates a user", activateUser)
-	service.Route("POST", "/users/:id/sendActivationEmail", "sends an activation email", sendActivationEmail)
+	service.Route("POST", "/users/:id/sendActivationEmail", "sends an activation email", sendUserActivationEmail)
 	service.Route("GET", "/users/:id/requestLink", "gets request link", getRequestLinkByUser)
 	service.Route("GET", "/users/:id/emails", "gets emails for a user", getEmailsForUser)
 	service.Route("POST", "/users", "creates a user", siesta.Compose(readUser, createUser))
@@ -80,6 +80,7 @@ func main() {
 	// Emails
 	service.Route("POST", "/emails", "creates an email", siesta.Compose(readEmail, createEmail))
 	service.Route("GET", "/emails/:address", "gets an email", getEmailByAddress)
+	service.Route("POST", "/emails/:address/send_activation", "sends an activation email", sendEmailActivationEmail)
 	service.Route("POST", "/emails/:address/activate", "activates an email", activateEmail)
 	service.Route("POST", "/emails/:address/validate", "validates an email addres", postValidateEmailAddress)
 

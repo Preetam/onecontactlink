@@ -3,12 +3,15 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
+	"github.com/Preetam/onecontactlink/web/linktoken"
 	"github.com/VividCortex/mysqlerr"
 	"github.com/VividCortex/siesta"
 	"github.com/go-sql-driver/mysql"
@@ -145,4 +148,70 @@ func postValidateEmailAddress(c siesta.Context, w http.ResponseWriter, r *http.R
 	}
 
 	requestData.ResponseData = validation.IsValid
+}
+
+func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	mg := c.Get(MailgunContextKey).(mailgun.Mailgun)
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+
+	var params siesta.Params
+	email := params.String("email", "", "Email address")
+	err := params.Parse(r.Form)
+	if err != nil {
+		requestData.StatusCode = http.StatusBadRequest
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	name := ""
+	status := 0
+	err = requestData.DB.QueryRow("SELECT emails.status, users.name FROM emails"+
+		" JOIN users ON emails.user = user.id WHERE emails.address = ? AND emails.deleted = 0",
+		*email).Scan(&status)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			requestData.StatusCode = http.StatusNotFound
+			return
+		}
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	if status != schema.EmailStatusDefault {
+		requestData.StatusCode = http.StatusNotModified
+		return
+	}
+
+	token, err := tokenCodec.EncodeToken(linktoken.NewLinkToken(&linktoken.EmailActivationTokenData{
+		ActivateEmail: *email,
+	}, int(time.Now().Unix()+86400)))
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	err = sendMail(mg, client.EmailMessage{
+		From:    `"OneContactLink" <noreply@out.onecontact.link>`,
+		To:      *email,
+		Subject: "Activate Email Address",
+		Content: fmt.Sprintf("Hi %s,\n\n"+
+			"Click the following link to activate your new email address: https://www.onecontact.link/activate-email/%s\n\n"+
+			"That link will only be valid for 1 day.", name, token),
+		HTMLContent: fmt.Sprintf("<p>Hi %s,</p>"+
+			"<p>Click "+
+			"<a href='https://www.onecontact.link/activate-email/%s'>here</a>"+
+			" to activate your new email address.</p>"+
+			"<p>That link will only be valid for 1 day.</p>", name, token),
+	})
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
 }

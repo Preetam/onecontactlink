@@ -170,6 +170,10 @@ func (c *Client) CreateEmail(user int, address string) (*schema.Email, error) {
 	return &email, nil
 }
 
+func (c *Client) SendEmailActivationEmail(address string) error {
+	return c.doRequest("POST", fmt.Sprintf("/emails/%s/send_activation", address), nil, nil)
+}
+
 func (c *Client) ActivateEmail(address string) error {
 	return c.doRequest("POST", fmt.Sprintf("/emails/%s/activate", address), nil, nil)
 }

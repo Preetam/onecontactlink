@@ -88,7 +88,7 @@ func (d *ActivationTokenData) UnmarshalJSON(data []byte) error {
 }
 
 type EmailActivationTokenData struct {
-	ActivateEmail string `json:"activateEmail"`
+	ActivateEmail string `json:"activate_email"`
 }
 
 func (d *EmailActivationTokenData) MarshalJSON() ([]byte, error) {

@@ -93,6 +93,25 @@ func main() {
 			requestData.ResponseData = emails
 		})
 
+	service.Route("POST", "/emails/:address/send_activation", "send activation email",
+		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+			var params siesta.Params
+			email := params.String("email", "", "Email address")
+			err := params.Parse(r.Form)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			err = internalAPIClient.SendEmailActivationEmail(*email)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		})
+
 	service.Route("GET", "/contactLink", "user",
 		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)

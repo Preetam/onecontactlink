@@ -630,6 +630,57 @@ func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func serveActivateEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	params := &siesta.Params{}
+	linkStr := params.String("link", "", "link token")
+	err := params.Parse(r.Form)
+	invalidLink := func() {
+		w.WriteHeader(http.StatusNotFound)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Not a valid link",
+		})
+		return
+	}
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	linkToken, err := tokenCodec.DecodeToken(*linkStr, new(linktoken.EmailActivationTokenData))
+	if err != nil {
+		invalidLink()
+		return
+	}
+
+	// Check if token expired
+	if linkToken.Expires <= int(time.Now().Unix()) {
+		// Token expired.
+		w.WriteHeader(http.StatusBadRequest)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "This link has expired.",
+		})
+		return
+	}
+
+	// extract email address
+	email := linkToken.Data.(*linktoken.EmailActivationTokenData).ActivateEmail
+
+	err = internalAPIClient.ActivateEmail(email)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
+			"Error": "Something went wrong. Please try again.",
+		})
+		return
+	}
+
+	w.Header().Add("Refresh", "2; /app")
+
+	templ.ExecuteTemplate(w, "success", map[string]string{
+		"Success": "Activated! Redirecting you to the app...",
+	})
+}
+
 func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if DevMode {
 		c.Set(middleware.CaptchaResult, captchaResultOK)
