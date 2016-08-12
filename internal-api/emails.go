@@ -155,7 +155,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 
 	var params siesta.Params
-	email := params.String("email", "", "Email address")
+	address := params.String("address", "", "Email address")
 	err := params.Parse(r.Form)
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
@@ -168,7 +168,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 	status := 0
 	err = requestData.DB.QueryRow("SELECT emails.status, users.name FROM emails"+
 		" JOIN users ON emails.user = users.id WHERE emails.address = ? AND emails.deleted = 0",
-		*email).Scan(&status, &name)
+		*address).Scan(&status, &name)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			requestData.StatusCode = http.StatusNotFound
@@ -186,7 +186,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 	}
 
 	token, err := tokenCodec.EncodeToken(linktoken.NewLinkToken(&linktoken.EmailActivationTokenData{
-		ActivateEmail: *email,
+		ActivateEmail: *address,
 	}, int(time.Now().Unix()+86400)))
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
@@ -197,7 +197,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 
 	err = sendMail(mg, client.EmailMessage{
 		From:    `"OneContactLink" <noreply@out.onecontact.link>`,
-		To:      *email,
+		To:      *address,
 		Subject: "Activate Email Address",
 		Content: fmt.Sprintf("Hi %s,\n\n"+
 			"Click the following link to activate your new email address: https://www.onecontact.link/activate-email/%s\n\n"+
