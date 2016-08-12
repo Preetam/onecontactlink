@@ -415,9 +415,10 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	tokenExpires := time.Now().Add(48 * time.Hour)
 	linkToken := linktoken.NewLinkToken(&linktoken.UserTokenData{
 		User: *userID,
-	}, int(time.Now().Unix()+86400))
+	}, int(tokenExpires.Unix()))
 
 	// get user information
 	_, err = internalAPIClient.GetUser(*userID)
@@ -445,6 +446,7 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   !DevMode,
+		Expires:  tokenExpires,
 	})
 
 	templ.ExecuteTemplate(w, "success", map[string]string{
