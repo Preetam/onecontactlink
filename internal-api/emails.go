@@ -168,7 +168,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 	status := 0
 	err = requestData.DB.QueryRow("SELECT emails.status, users.name FROM emails"+
 		" JOIN users ON emails.user = users.id WHERE emails.address = ? AND emails.deleted = 0",
-		*email).Scan(&status)
+		*email).Scan(&status, &name)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			requestData.StatusCode = http.StatusNotFound
