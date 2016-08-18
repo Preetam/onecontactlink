@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
+	log "github.com/Sirupsen/logrus"
 	"github.com/VividCortex/siesta"
 )
 

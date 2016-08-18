@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -11,8 +10,13 @@ import (
 	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/web/linktoken"
+	log "github.com/Sirupsen/logrus"
 	"github.com/VividCortex/siesta"
 )
+
+func init() {
+	log.SetFormatter(&log.JSONFormatter{})
+}
 
 var (
 	// RecaptchaSecret is the API secret used to verify reCHAPTCHA responses

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
+	log "github.com/Sirupsen/logrus"
 	"github.com/VividCortex/siesta"
 )
 

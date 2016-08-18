@@ -3,10 +3,10 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/VividCortex/siesta"
 )
 

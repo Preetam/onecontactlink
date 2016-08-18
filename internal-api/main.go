@@ -3,15 +3,19 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"log"
 	"net/http"
 
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/web/linktoken"
+	log "github.com/Sirupsen/logrus"
 	"github.com/VividCortex/siesta"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/mailgun/mailgun-go"
 )
+
+func init() {
+	log.SetFormatter(&log.JSONFormatter{})
+}
 
 var (
 	DSN           = "testuser@tcp(127.0.0.1:3306)/onecontactlink_test?charset=utf8"

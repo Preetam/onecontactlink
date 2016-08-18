@@ -2,14 +2,18 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/http"
 
 	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/web/linktoken"
+	log "github.com/Sirupsen/logrus"
 	"github.com/VividCortex/siesta"
 )
+
+func init() {
+	log.SetFormatter(&log.JSONFormatter{})
+}
 
 var (
 	InternalAPIEndpoint = "http://localhost:4001/v1"

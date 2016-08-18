@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/Preetam/onecontactlink/middleware"
 	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
+	log "github.com/Sirupsen/logrus"
 	"github.com/VividCortex/mysqlerr"
 	"github.com/VividCortex/siesta"
 	"github.com/go-sql-driver/mysql"
