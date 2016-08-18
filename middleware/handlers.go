@@ -78,7 +78,7 @@ func ResponseWriter(c siesta.Context, w http.ResponseWriter, r *http.Request,
 	log.WithFields(log.Fields{
 		"request_id":  requestData.RequestID,
 		"method":      r.Method,
-		"url":         r.URL,
+		"url":         r.URL.String(),
 		"status_code": requestData.StatusCode,
 		"latency":     latencyDur.Seconds(),
 	}).Infof("[Req %s] %s %s status code %d latency %v", requestData.RequestID, r.Method, r.URL,
