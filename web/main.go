@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	log.SetFormatter(&log.JSONFormatter{TimestampFormat: ""})
+	log.SetFormatter(&log.JSONFormatter{})
 }
 
 var (
