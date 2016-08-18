@@ -25,7 +25,7 @@ func RequestIdentifier(c siesta.Context, w http.ResponseWriter, r *http.Request)
 	log.WithFields(log.Fields{
 		"request_id": requestData.RequestID,
 		"method":     r.Method,
-		"url":        r.URL,
+		"url":        r.URL.String(),
 	}).Infof("[Req %s] %s %s", requestData.RequestID, r.Method, r.URL)
 }
 
