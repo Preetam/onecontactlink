@@ -32,7 +32,7 @@ func readRequest(c siesta.Context, w http.ResponseWriter, r *http.Request, q fun
 	} else {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		q()
 	}
 }
@@ -45,7 +45,7 @@ func getRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	request := schema.Request{
@@ -58,11 +58,11 @@ func getRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			requestData.StatusCode = http.StatusNotFound
-			log.Printf("[Req %s] %v", requestData.RequestID, err)
+			log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 			return
 		}
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	requestData.ResponseData = request
@@ -81,7 +81,7 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	tx, err := requestData.DB.Begin()
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	defer tx.Rollback()
@@ -93,7 +93,7 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		request.FromUser, request.ToUser).Scan(&userCount)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	if userCount == 0 {
@@ -112,7 +112,7 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			if mysqlErr.Number == mysqlerr.ER_DUP_ENTRY {
 				// already exists
 				requestData.StatusCode = http.StatusConflict
-				log.Printf("[Req %s] %v", requestData.RequestID, err)
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 
 				// send the existing request
 				err := tx.QueryRow("SELECT id, status, created, updated FROM"+
@@ -123,7 +123,7 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					// Some other error
 					requestData.StatusCode = http.StatusInternalServerError
-					log.Printf("[Req %s] %v", requestData.RequestID, err)
+					log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 					return
 				}
 				requestData.ResponseData = request
@@ -132,7 +132,7 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		}
 		// Some other error
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -140,14 +140,14 @@ func createRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	lastID, err := result.LastInsertId()
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -165,7 +165,7 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -175,7 +175,7 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		requestData.StatusCode = http.StatusNotModified
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -207,7 +207,7 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -218,7 +218,7 @@ func sendRequestEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	manageLink := fmt.Sprintf("https://www.onecontact.link/m/%s", tokenStr)
@@ -266,7 +266,7 @@ We'll send them this email address if you approve.</p>
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = "couldn't send email"
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -275,7 +275,7 @@ We'll send them this email address if you approve.</p>
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = "couldn't update request status"
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 }
@@ -290,7 +290,7 @@ func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	switch *action {
@@ -306,7 +306,7 @@ func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	defer tx.Rollback()
@@ -317,7 +317,7 @@ func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusNotModified
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -338,7 +338,7 @@ func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -346,7 +346,7 @@ func manageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 }
@@ -361,7 +361,7 @@ func sendContactInfoMail(c siesta.Context, w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -372,7 +372,7 @@ func sendContactInfoMail(c siesta.Context, w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -406,7 +406,7 @@ func sendContactInfoMail(c siesta.Context, w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -431,7 +431,7 @@ https://www.onecontact.link/
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -440,7 +440,7 @@ https://www.onecontact.link/
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 }

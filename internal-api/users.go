@@ -26,7 +26,7 @@ func readUser(c siesta.Context, w http.ResponseWriter, r *http.Request, q func()
 	} else {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		q()
 	}
 }
@@ -39,7 +39,7 @@ func getUserByID(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	user := schema.User{
@@ -55,11 +55,11 @@ func getUserByID(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			requestData.StatusCode = http.StatusNotFound
-			log.Printf("[Req %s] %v", requestData.RequestID, err)
+			log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 			return
 		}
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	requestData.ResponseData = user
@@ -78,7 +78,7 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	tx, err := requestData.DB.Begin()
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	defer tx.Rollback()
@@ -89,7 +89,7 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		Scan(&email.ID, &email.Address, &email.User)
 	if err != nil && err != sql.ErrNoRows {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -109,7 +109,7 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		emailID, err := execResult.LastInsertId()
 		if err != nil {
 			requestData.StatusCode = http.StatusInternalServerError
-			log.Printf("[Req %s] %v", requestData.RequestID, err)
+			log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 			return
 		}
 		email.ID = int(emailID)
@@ -123,13 +123,13 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		" VALUES (?, ?, ?, ?, ?)", user.Name, user.Code, email.ID, now, now)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	userID, err := execResult.LastInsertId()
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	user.ID = int(userID)
@@ -138,7 +138,7 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	_, err = tx.Exec("UPDATE emails SET user = ? WHERE id = ?", user.ID, email.ID)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -147,14 +147,14 @@ func createUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		" VALUES (?,?,?,?)", user.ID, generateCode(schema.RequestLinkCodeSize), now, now)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	requestData.ResponseData = user
@@ -168,7 +168,7 @@ func activateUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -178,14 +178,14 @@ func activateUser(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
 	if rowsAffected, err := result.RowsAffected(); err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	} else {
 		if rowsAffected != 1 {
@@ -203,7 +203,7 @@ func getEmailsForUser(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	emails := []schema.Email{}
@@ -212,7 +212,7 @@ func getEmailsForUser(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		" FROM emails WHERE user = ? AND deleted = 0", *userID)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 	}
 	defer rows.Close()
 
@@ -223,7 +223,7 @@ func getEmailsForUser(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 		err = rows.Scan(&email.ID, &email.Address, &email.Status, &email.Created, &email.Updated)
 		if err != nil {
 			requestData.StatusCode = http.StatusInternalServerError
-			log.Printf("[Req %s] %v", requestData.RequestID, err)
+			log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 			return
 		}
 		emails = append(emails, email)

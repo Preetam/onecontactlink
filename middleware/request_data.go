@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"database/sql"
+	"time"
 )
 
 type RequestData struct {
@@ -11,4 +12,5 @@ type RequestData struct {
 	ResponseData  interface{}
 	ResponseError string
 	Response      interface{}
+	Start         time.Time
 }

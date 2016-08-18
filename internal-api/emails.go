@@ -32,7 +32,7 @@ func readEmail(c siesta.Context, w http.ResponseWriter, r *http.Request, q func(
 	} else {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		q()
 	}
 }
@@ -56,20 +56,20 @@ func createEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			if mysqlErr.Number == mysqlerr.ER_DUP_ENTRY {
 				// already exists
 				requestData.StatusCode = http.StatusConflict
-				log.Printf("[Req %s] %v", requestData.RequestID, err)
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 				return
 			}
 		}
 		// Some other error
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
 	lastID, err := result.LastInsertId()
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	email.ID = int(lastID)
@@ -84,7 +84,7 @@ func getEmailByAddress(c siesta.Context, w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	email := schema.Email{
@@ -96,11 +96,11 @@ func getEmailByAddress(c siesta.Context, w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			requestData.StatusCode = http.StatusNotFound
-			log.Printf("[Req %s] %v", requestData.RequestID, err)
+			log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 			return
 		}
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	requestData.ResponseData = email
@@ -114,7 +114,7 @@ func activateEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -122,7 +122,7 @@ func activateEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		schema.EmailStatusActive, *address)
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 	}
 }
 
@@ -135,7 +135,7 @@ func postValidateEmailAddress(c siesta.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -143,7 +143,7 @@ func postValidateEmailAddress(c siesta.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -160,7 +160,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -176,7 +176,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 		}
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -191,7 +191,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -211,7 +211,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.Printf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 }

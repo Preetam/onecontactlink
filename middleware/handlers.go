@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/VividCortex/siesta"
@@ -16,11 +17,16 @@ type APIResponse struct {
 }
 
 func RequestIdentifier(c siesta.Context, w http.ResponseWriter, r *http.Request) {
-	requestID := fmt.Sprintf("%08x", rand.Intn(0xffffffff))
-	c.Set(RequestDataKey, &RequestData{
-		RequestID: requestID,
-	})
-	log.Printf("[Req %s] %s %s", requestID, r.Method, r.URL)
+	requestData := &RequestData{
+		RequestID: fmt.Sprintf("%08x", rand.Intn(0xffffffff)),
+		Start:     time.Now(),
+	}
+	c.Set(RequestDataKey, requestData)
+	log.WithFields(log.Fields{
+		"request_id": requestData.RequestID,
+		"method":     r.Method,
+		"url":        r.URL,
+	}).Infof("[Req %s] %s %s", requestData.RequestID, r.Method, r.URL)
 }
 
 func ResponseGenerator(c siesta.Context, w http.ResponseWriter, r *http.Request) {
@@ -66,6 +72,17 @@ func ResponseWriter(c siesta.Context, w http.ResponseWriter, r *http.Request,
 		// what it exactly is.
 		enc.Encode(response)
 	}
+
+	now := time.Now()
+	latencyDur := now.Sub(requestData.Start)
+	log.WithFields(log.Fields{
+		"request_id":  requestData.RequestID,
+		"method":      r.Method,
+		"url":         r.URL,
+		"status_code": requestData.StatusCode,
+		"latency":     latencyDur.Seconds(),
+	}).Infof("[Req %s] %s %s status code %d latency %v", requestData.RequestID, r.Method, r.URL,
+		requestData.StatusCode, latencyDur)
 
 	// We're at the end of the middleware chain, so quit.
 	quit()
