@@ -196,7 +196,7 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 	}
 
 	err = sendMail(mg, client.EmailMessage{
-		From:    `"OneContactLink" <noreply@out.onecontact.link>`,
+		From:    `"OneContactLink" <noreply@onecontact.link>`,
 		To:      *address,
 		Subject: "Activate Email Address",
 		Content: fmt.Sprintf("Hi %s,\n\n"+

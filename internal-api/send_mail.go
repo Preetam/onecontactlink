@@ -68,7 +68,7 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 
 	err = sendMail(mg, client.EmailMessage{
 		To:      mainEmail,
-		From:    `"OneContactLink Notifications" <notify@out.onecontact.link>`,
+		From:    `"OneContactLink Notifications" <notify@onecontact.link>`,
 		Subject: "OneContactLink Login Link",
 		Content: fmt.Sprintf("Hi %s,\n\nHere's your login link. It'll be active for 15 minutes.\n\n"+
 			"%s", userName, "https://www.onecontact.link/auth/"+tokenStr),
@@ -157,7 +157,7 @@ func sendUserActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Re
 	}
 
 	err = sendMail(mg, client.EmailMessage{
-		From:    `"OneContactLink" <noreply@out.onecontact.link>`,
+		From:    `"OneContactLink" <noreply@onecontact.link>`,
 		To:      emailAddress,
 		Subject: "Activate OneContactLink Account",
 		Content: fmt.Sprintf("Hi %s,\n\n"+

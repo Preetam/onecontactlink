@@ -256,7 +256,7 @@ We'll send them this email address if you approve.</p>
 <p>These links expire in 1 day.</p>
 `, receiverName, senderName, senderEmail, approveLink, rejectLink)
 	msg := client.EmailMessage{
-		From:        `"OneContactLink Notifications" <notify@out.onecontact.link>`,
+		From:        `"OneContactLink Notifications" <notify@onecontact.link>`,
 		To:          receiverEmail,
 		Subject:     "OneContactLink request",
 		Content:     messageContent,
@@ -422,7 +422,7 @@ https://www.onecontact.link/
 <p>%s has approved your contact request! You can reach them at <a href='mailto:%s'>%s</a>.</p>
 `, receiverName, requestedName, requestedEmail, requestedEmail)
 	err = sendMail(mg, client.EmailMessage{
-		From:        `"OneContactLink Notifications" <notify@out.onecontact.link>`,
+		From:        `"OneContactLink Notifications" <notify@onecontact.link>`,
 		To:          receiverEmail,
 		Subject:     requestedName + "'s contact information via OneContactLink",
 		Content:     messageContent,
