@@ -358,6 +358,7 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   !DevMode,
+		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
 	w.Header().Add("Refresh", "2; /app")
@@ -631,6 +632,7 @@ func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   !DevMode,
+		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
 	w.Header().Add("Refresh", "2; /app")
