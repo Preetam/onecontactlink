@@ -25,7 +25,11 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -49,7 +53,11 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		if err == sql.ErrNoRows {
 			requestData.StatusCode = http.StatusNotFound
 			requestData.ResponseError = "not found"
-			log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+			log.WithFields(log.Fields{"request_id": requestData.RequestID,
+				"method": r.Method,
+				"url":    r.URL,
+				"error":  err.Error()}).
+				Warnf("[Req %s] %v", requestData.RequestID, err)
 			return
 		}
 	}
@@ -62,7 +70,11 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -79,7 +91,11 @@ func sendAuthEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 }
@@ -118,7 +134,11 @@ func sendUserActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Re
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -136,7 +156,11 @@ func sendUserActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Re
 		}
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -152,7 +176,11 @@ func sendUserActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Re
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -172,7 +200,11 @@ func sendUserActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.Re
 	if err != nil {
 		requestData.StatusCode = http.StatusInternalServerError
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 }

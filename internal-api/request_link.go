@@ -18,7 +18,11 @@ func getRequestLinkByCode(c siesta.Context, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -32,7 +36,11 @@ func getRequestLinkByCode(c siesta.Context, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		requestData.StatusCode = http.StatusNotFound
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	requestData.ResponseData = requestLink
@@ -47,7 +55,11 @@ func getRequestLinkByUser(c siesta.Context, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		requestData.StatusCode = http.StatusBadRequest
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 
@@ -61,7 +73,11 @@ func getRequestLinkByUser(c siesta.Context, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		requestData.StatusCode = http.StatusNotFound
 		requestData.ResponseError = err.Error()
-		log.WithFields(log.Fields{"request_id": requestData.RequestID,"method": r.Method,"url": r.URL, "error": err.Error()}).Warnf("[Req %s] %v", requestData.RequestID, err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
 	requestData.ResponseData = requestLink

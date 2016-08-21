@@ -21,13 +21,14 @@ var (
 	captchaResultError = 2
 )
 
-func serveGetRequest(w http.ResponseWriter, r *http.Request) {
+func serveGetRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	params := &siesta.Params{}
 	linkStr := params.String("link", "", "link code")
 	err := params.Parse(r.Form)
 
 	invalidLink := func() {
-		w.WriteHeader(http.StatusNotFound)
+		requestData.StatusCode = http.StatusNotFound
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Not a valid OneContactLink",
 		})
@@ -54,7 +55,7 @@ func serveGetRequest(w http.ResponseWriter, r *http.Request) {
 	// get user
 	user, err := internalAPIClient.GetUser(requestLink.User)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong",
 		})
@@ -72,18 +73,19 @@ func serveGetRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func servePostRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	captchaResult := extractCaptchaResult(c)
 	switch captchaResult {
 	case captchaResultOK:
 		// nothing to do
 	case captchaResultFail:
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "request", map[string]string{
 			"Error": "Invalid CAPTCHA.",
 		})
 		return
 	case captchaResultError:
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "request", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -96,7 +98,7 @@ func servePostRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	err := params.Parse(r.Form)
 
 	invalidLink := func() {
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Not a valid OneContactLink",
 		})
@@ -121,7 +123,7 @@ func servePostRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	// get user
 	user, err := internalAPIClient.GetUser(requestLink.User)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "request", map[string]string{
 			"Error": "Something went wrong",
 		})
@@ -134,7 +136,7 @@ func servePostRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	}
 
 	if *nameStr == "" || *emailStr == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "request", map[string]string{
 			"Error": "You must provide a name and email address",
 		})
@@ -150,7 +152,7 @@ func servePostRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 			// Email doesn't exist. Create a new user with the email.
 			user, err := internalAPIClient.CreateUser(schema.NewUser(*nameStr, *emailStr))
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
+				requestData.StatusCode = http.StatusInternalServerError
 				templ.ExecuteTemplate(w, "request", map[string]string{
 					"Name":    user.Name,
 					"Warning": "Something went wrong. Please try again.",
@@ -159,7 +161,7 @@ func servePostRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 			}
 			fromUser = user.ID
 		} else {
-			w.WriteHeader(http.StatusInternalServerError)
+			requestData.StatusCode = http.StatusInternalServerError
 			templ.ExecuteTemplate(w, "request", map[string]string{
 				"Name":    user.Name,
 				"Warning": "Something went wrong. Please try again.",
@@ -183,7 +185,7 @@ func servePostRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 			internalAPIClient.SendContactInfoEmail(requestID)
 			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "request", map[string]string{
 			"Name":    user.Name,
 			"Warning": "Something went wrong. Please try again.",
@@ -204,14 +206,15 @@ func servePostRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func serveManageRequest(w http.ResponseWriter, r *http.Request) {
+func serveManageRequest(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	params := &siesta.Params{}
 	linkStr := params.String("link", "", "link token")
 	actionStr := params.String("action", "", "action")
 	err := params.Parse(r.Form)
 
 	invalidLink := func() {
-		w.WriteHeader(http.StatusNotFound)
+		requestData.StatusCode = http.StatusNotFound
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Not a valid link",
 		})
@@ -230,7 +233,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if *actionStr != "approve" && *actionStr != "reject" {
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Invalid action.",
 		})
@@ -240,7 +243,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 	// Check if token expired
 	if linkToken.Expires <= int(time.Now().Unix()) {
 		// Token expired.
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "This link has expired.",
 		})
@@ -261,7 +264,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -272,7 +275,7 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 	if *actionStr == "approve" {
 		err = internalAPIClient.SendContactInfoEmail(requestID)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			requestData.StatusCode = http.StatusInternalServerError
 			templ.ExecuteTemplate(w, "invalid", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
@@ -290,11 +293,12 @@ func serveManageRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	params := &siesta.Params{}
 	linkStr := params.String("link", "", "link token")
 	err := params.Parse(r.Form)
 	invalidLink := func() {
-		w.WriteHeader(http.StatusNotFound)
+		requestData.StatusCode = http.StatusNotFound
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Not a valid link",
 		})
@@ -314,7 +318,7 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	// Check if token expired
 	if linkToken.Expires <= int(time.Now().Unix()) {
 		// Token expired.
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "This link has expired.",
 		})
@@ -327,7 +331,7 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	// get user information
 	_, err = internalAPIClient.GetUser(userID)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -340,7 +344,7 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	token, err := tokenCodec.EncodeToken(linkToken)
 	if err != nil {
 		// Token expired.
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -364,18 +368,19 @@ func serveAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func servePostLogin(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	captchaResult := extractCaptchaResult(c)
 	switch captchaResult {
 	case captchaResultOK:
 		// nothing to do
 	case captchaResultFail:
-		w.WriteHeader(http.StatusBadRequest)
-		templ.ExecuteTemplate(w, "login", map[string]string{
+		requestData.StatusCode = http.StatusBadRequest
+		templ.ExecuteTemplate(w, "in", map[string]string{
 			"Error": "Invalid CAPTCHA.",
 		})
 		return
 	case captchaResultError:
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "login", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -385,7 +390,7 @@ func servePostLogin(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	emailStr := params.String("email", "", "email")
 	err := params.Parse(r.Form)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "login", map[string]string{
 			"Error": "Invalid parameters.",
 		})
@@ -400,11 +405,12 @@ func servePostLogin(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	params := &siesta.Params{}
 	userID := params.Int("user", 0, "user ID")
 	err := params.Parse(r.Form)
 	invalidLink := func() {
-		w.WriteHeader(http.StatusNotFound)
+		requestData.StatusCode = http.StatusNotFound
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Not a valid link",
 		})
@@ -423,7 +429,7 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 	// get user information
 	_, err = internalAPIClient.GetUser(*userID)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -432,7 +438,7 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 
 	token, err := tokenCodec.EncodeToken(linkToken)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -455,18 +461,19 @@ func serveDevModeAuth(c siesta.Context, w http.ResponseWriter, r *http.Request) 
 }
 
 func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	captchaResult := extractCaptchaResult(c)
 	switch captchaResult {
 	case captchaResultOK:
 		// nothing to do
 	case captchaResultFail:
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Invalid CAPTCHA.",
 		})
 		return
 	case captchaResultError:
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -477,7 +484,7 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	emailStr := params.String("email", "", "email")
 	err := params.Parse(r.Form)
 	if err != nil || *nameStr == "" || *emailStr == "" {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Invalid name or email.",
 		})
@@ -487,7 +494,7 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	// Check if email exists.
 	email, err := internalAPIClient.GetEmail(*emailStr)
 	if err != nil && err != client.ErrNotFound {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "signup", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -499,7 +506,7 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		// Email not found. Create a user with that email address.
 		user, err := internalAPIClient.CreateUser(schema.NewUser(*nameStr, *emailStr))
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			requestData.StatusCode = http.StatusInternalServerError
 			templ.ExecuteTemplate(w, "signup", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
@@ -510,7 +517,7 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		// Email already exists. Check if it's associated with an active user.
 		user, err := internalAPIClient.GetUser(email.User)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			requestData.StatusCode = http.StatusInternalServerError
 			templ.ExecuteTemplate(w, "signup", map[string]string{
 				"Error": "Something went wrong. Please try again.",
 			})
@@ -522,7 +529,7 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			// User hasn't been activated.
 			userToReceiveActivationEmail = user.ID
 		case schema.UserStatusActive:
-			w.WriteHeader(http.StatusConflict)
+			requestData.StatusCode = http.StatusConflict
 			templ.ExecuteTemplate(w, "invalid", map[string]string{
 				"Error": "This email address is already associated with an active user.",
 			})
@@ -533,25 +540,26 @@ func servePostSignup(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	// Send activation email.
 	err = internalAPIClient.SendActivationEmail(userToReceiveActivationEmail)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
 		return
 	}
 
-	w.WriteHeader(http.StatusInternalServerError)
+	requestData.StatusCode = http.StatusInternalServerError
 	templ.ExecuteTemplate(w, "success", map[string]string{
 		"Success": "We've sent you an email to activate your account.",
 	})
 }
 
 func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	params := &siesta.Params{}
 	linkStr := params.String("link", "", "link token")
 	err := params.Parse(r.Form)
 	invalidLink := func() {
-		w.WriteHeader(http.StatusNotFound)
+		requestData.StatusCode = http.StatusNotFound
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Not a valid link",
 		})
@@ -571,7 +579,7 @@ func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	// Check if token expired
 	if linkToken.Expires <= int(time.Now().Unix()) {
 		// Token expired.
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "This link has expired.",
 		})
@@ -584,7 +592,7 @@ func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	// activate user
 	err = internalAPIClient.ActivateUser(userID)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -595,7 +603,7 @@ func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	_, err = internalAPIClient.GetUser(userID)
 	if err != nil {
 		// Token expired.
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -609,7 +617,7 @@ func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	// Set a cookie
 	token, err := tokenCodec.EncodeToken(userToken)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -633,11 +641,12 @@ func serveActivate(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func serveActivateEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	params := &siesta.Params{}
 	linkStr := params.String("link", "", "link token")
 	err := params.Parse(r.Form)
 	invalidLink := func() {
-		w.WriteHeader(http.StatusNotFound)
+		requestData.StatusCode = http.StatusNotFound
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Not a valid link",
 		})
@@ -657,7 +666,7 @@ func serveActivateEmail(c siesta.Context, w http.ResponseWriter, r *http.Request
 	// Check if token expired
 	if linkToken.Expires <= int(time.Now().Unix()) {
 		// Token expired.
-		w.WriteHeader(http.StatusBadRequest)
+		requestData.StatusCode = http.StatusBadRequest
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "This link has expired.",
 		})
@@ -669,7 +678,7 @@ func serveActivateEmail(c siesta.Context, w http.ResponseWriter, r *http.Request
 
 	err = internalAPIClient.ActivateEmail(email)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		requestData.StatusCode = http.StatusInternalServerError
 		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Something went wrong. Please try again.",
 		})
@@ -684,6 +693,7 @@ func serveActivateEmail(c siesta.Context, w http.ResponseWriter, r *http.Request
 }
 
 func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 	if DevMode {
 		c.Set(middleware.CaptchaResult, captchaResultOK)
 		return
@@ -693,7 +703,11 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	recaptchaResponse := params.String("g-recaptcha-response", "", "reCAPTCHA response")
 	err := params.Parse(r.Form)
 	if err != nil {
-		log.Println(err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		c.Set(middleware.CaptchaResult, captchaResultFail)
 		return
 	}
@@ -709,7 +723,11 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		"response": []string{*recaptchaResponse},
 	})
 	if err != nil {
-		log.Println(err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		c.Set(middleware.CaptchaResult, captchaResultError)
 		return
 	}
@@ -720,7 +738,11 @@ func verifyCaptcha(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 	err = json.NewDecoder(resp.Body).Decode(&recaptchaAPIResponse)
 	if err != nil {
-		log.Println(err)
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
 		c.Set(middleware.CaptchaResult, captchaResultError)
 		return
 	}

@@ -28,7 +28,7 @@ var emails = m.request({
 
 var contactLink = m.request({
 	method: "GET",
-	url: "/api/v1/contactLink",
+	url: "/api/v1/contact_link",
 	unwrapSuccess: function(response) {
 		return response.data;
 	},
@@ -72,22 +72,12 @@ var home = {
 	}
 };
 
-var login = {
-	view: function() {
-		return m("div", [
-			m("form", [
-				m("label[for='foo']", "input"),
-				m("input[name='foo']")
-			])
-		]);
-	}
-};
-
 var nav = {
 	view: function() {
 		return [
 			m("li[class='navbar-item']",
-				m("a[href='/']", {config: m.route}, "Home"),
+				m("a[href='/']", "Home"),
+				m("a[href='/']", {config: m.route}, "Manage"),
 				m("a[href='/app/logout']", "Logout")
 			)
 		];

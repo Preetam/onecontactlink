@@ -39,16 +39,18 @@ func main() {
 	service.AddPost(middleware.ResponseWriter)
 
 	service.AddPre(func(c siesta.Context, w http.ResponseWriter, r *http.Request, q func()) {
+		requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+
 		// decode token data
 		cookie, err := r.Cookie("ocl")
 		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
+			requestData.StatusCode = http.StatusUnauthorized
 			q()
 			return
 		}
 		token, err := tokenCodec.DecodeToken(cookie.Value, new(linktoken.UserTokenData))
 		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
+			requestData.StatusCode = http.StatusUnauthorized
 			q()
 			return
 		}
@@ -68,13 +70,17 @@ func main() {
 			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 			userID, ok := c.Get("user").(int)
 			if !ok {
-				w.WriteHeader(http.StatusBadRequest)
+				requestData.StatusCode = http.StatusBadRequest
 				return
 			}
 			user, err := internalAPIClient.GetUser(userID)
 			if err != nil {
-				log.Println(err)
-				w.WriteHeader(http.StatusInternalServerError)
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				requestData.StatusCode = http.StatusInternalServerError
 				return
 			}
 			requestData.ResponseData = user
@@ -85,13 +91,17 @@ func main() {
 			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
 			userID, ok := c.Get("user").(int)
 			if !ok {
-				w.WriteHeader(http.StatusBadRequest)
+				requestData.StatusCode = http.StatusBadRequest
 				return
 			}
 			emails, err := internalAPIClient.GetUserEmails(userID)
 			if err != nil {
-				log.Println(err)
-				w.WriteHeader(http.StatusInternalServerError)
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				requestData.StatusCode = http.StatusInternalServerError
 				return
 			}
 			requestData.ResponseData = emails
@@ -99,44 +109,65 @@ func main() {
 
 	service.Route("POST", "/emails/:address/send_activation", "send activation email",
 		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+
 			var params siesta.Params
 			address := params.String("address", "", "Email address")
 			err := params.Parse(r.Form)
 			if err != nil {
-				log.Println(err)
-				w.WriteHeader(http.StatusBadRequest)
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				requestData.StatusCode = http.StatusBadRequest
 				return
 			}
 
 			err = internalAPIClient.SendEmailActivationEmail(*address)
 			if err != nil {
-				log.Println(err)
-				w.WriteHeader(http.StatusInternalServerError)
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				requestData.StatusCode = http.StatusInternalServerError
 				return
 			}
 		})
 
-	service.Route("GET", "/contactLink", "user",
+	service.Route("GET", "/contact_link", "user",
 		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+
 			userID, ok := c.Get("user").(int)
 			if !ok {
-				w.WriteHeader(http.StatusBadRequest)
+				requestData.StatusCode = http.StatusBadRequest
 				return
 			}
 			user, err := internalAPIClient.GetUser(userID)
 			if err != nil {
-				log.Println(err)
-				w.WriteHeader(http.StatusInternalServerError)
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				requestData.StatusCode = http.StatusInternalServerError
 				return
 			}
 			requestLink, err := internalAPIClient.GetRequestLinkByUser(userID)
 			if err != nil {
-				log.Println(err)
-				w.WriteHeader(http.StatusInternalServerError)
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				requestData.StatusCode = http.StatusInternalServerError
 				return
 			}
-			requestData.ResponseData = "http://www.onecontact.link/r/" + user.Code + "-" + requestLink.Code
+			requestData.ResponseData = "http://www.onecontact.link/r/" +
+				user.Code + "-" +
+				requestLink.Code
 		})
 
 	log.Println("listening on", *addr)

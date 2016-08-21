@@ -57,13 +57,12 @@ func ResponseWriter(c siesta.Context, w http.ResponseWriter, r *http.Request,
 
 	enc := json.NewEncoder(w)
 
-	// If we have a status code set in the context,
-	// send that in the header.
-	//
-	// Go defaults to 200 OK.
-	if requestData.StatusCode != 0 {
-		w.WriteHeader(requestData.StatusCode)
+	if requestData.StatusCode == 0 {
+		// Default to 200 if not set.
+		requestData.StatusCode = 200
 	}
+	// Set status code.
+	w.WriteHeader(requestData.StatusCode)
 
 	// Check to see if we have some sort of response.
 	response := c.Get(ResponseKey)

@@ -14,10 +14,6 @@ import (
 	"github.com/VividCortex/siesta"
 )
 
-func init() {
-	log.SetFormatter(&log.JSONFormatter{})
-}
-
 var (
 	// RecaptchaSecret is the API secret used to verify reCHAPTCHA responses
 	RecaptchaSecret = ""
@@ -41,6 +37,10 @@ func main() {
 	flag.BoolVar(&DevMode, "dev-mode", DevMode, "Developer mode")
 
 	flag.Parse()
+
+	if !DevMode {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
 
 	var err error
 	templ, err = template.ParseGlob(filepath.Join(*templatesDir, "*"))

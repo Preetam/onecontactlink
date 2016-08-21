@@ -1,18 +1,23 @@
 {{- define "nav" -}}
 <div class="row">
-  <div class="one-half column">
-  <h1 class='brand'><a href='/'>OneContact.Link</a></h1>
-  </div>
-  <div class="one-half column">
-    {{- if .App -}}
-    <ul id='nav' class='navbar'>
-    </ul>
-    {{- else -}}
-    <ul class='navbar'>
-      <li class='navbar-item'><a href='/'>Home</a></li>
-      <li class='navbar-item'><a href='/app'>Manage</a></li>
-    </ul>
-    {{- end -}}
-  </div>
+	<div class="one-half column">
+		<div class='brand'>
+			<a href='/'>
+				<img src='/img/logo_black.svg'/>
+				<span>OneContact.Link</span>
+			</a>
+		</div>
+	</div>
+	<div class="one-half column">
+	{{- if .App -}}
+	<ul id='nav' class='navbar'>
+	</ul>
+	{{- else -}}
+	<ul class='navbar'>
+		<li class='navbar-item'><a href='/'>Home</a></li>
+		<li class='navbar-item'><a href='/app'>Manage</a></li>
+	</ul>
+	{{- end -}}
+	</div>
 </div>
 {{- end -}}

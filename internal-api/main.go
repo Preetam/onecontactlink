@@ -13,10 +13,6 @@ import (
 	"github.com/mailgun/mailgun-go"
 )
 
-func init() {
-	log.SetFormatter(&log.JSONFormatter{})
-}
-
 var (
 	DSN           = "testuser@tcp(127.0.0.1:3306)/onecontactlink_test?charset=utf8"
 	MailgunDomain = "samples.mailgun.org"
@@ -41,6 +37,10 @@ func main() {
 	flag.StringVar(&TokenKey, "token-key", TokenKey, "Token key")
 	flag.BoolVar(&DevMode, "dev-mode", DevMode, "developer mode")
 	flag.Parse()
+
+	if !DevMode {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
 
 	db, err := sql.Open("mysql", DSN)
 	if err != nil {
