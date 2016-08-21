@@ -11,13 +11,10 @@ import (
 	"github.com/VividCortex/siesta"
 )
 
-func init() {
-	log.SetFormatter(&log.JSONFormatter{})
-}
-
 var (
 	InternalAPIEndpoint = "http://localhost:4001/v1"
 	TokenKey            = "test key 1234567"
+	DevMode             = false
 
 	internalAPIClient *internalClient.Client
 	tokenCodec        *linktoken.TokenCodec
@@ -28,7 +25,12 @@ func main() {
 	flag.StringVar(&InternalAPIEndpoint, "internal-api", InternalAPIEndpoint,
 		"Base URI to the internal API")
 	flag.StringVar(&TokenKey, "token-key", TokenKey, "Token key")
+	flag.BoolVar(&DevMode, "dev-mode", DevMode, "Developer mode")
 	flag.Parse()
+
+	if !DevMode {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
 
 	internalAPIClient = internalClient.New(InternalAPIEndpoint)
 	tokenCodec = linktoken.NewTokenCodec(1, TokenKey)
