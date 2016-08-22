@@ -1,43 +1,30 @@
-var user = m.request({
+var req = function(opts) {
+	opts.config = function(xhr) {
+		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+	};
+	opts.unwrapSuccess = function(response) {
+		return response.data;
+	};
+	opts.unwrapError = function(response) {
+		return response.error;
+	};
+
+	return m.request(opts);
+};
+
+var user = req({
 	method: "GET",
 	url: "/api/v1/user",
-	unwrapSuccess: function(response) {
-		return response.data;
-	},
-	unwrapError: function(response) {
-		return response.error;
-	},
-	config: function(xhr) {
-		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-	}
 });
 
-var emails = m.request({
+var emails = req({
 	method: "GET",
 	url: "/api/v1/emails",
-	unwrapSuccess: function(response) {
-		return response.data;
-	},
-	unwrapError: function(response) {
-		return response.error;
-	},
-	config: function(xhr) {
-		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-	}
 });
 
-var contactLink = m.request({
+var contactLink = req({
 	method: "GET",
 	url: "/api/v1/contact_link",
-	unwrapSuccess: function(response) {
-		return response.data;
-	},
-	unwrapError: function(response) {
-		return response.error;
-	},
-	config: function(xhr) {
-		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-	}
 });
 
 var home = {
@@ -67,7 +54,8 @@ var home = {
 						(userInfo.mainEmail == email.address ? " (main)" : "") +
 						(email.status == 0 ? " (pending activation)" : ""));
 				})
-			])
+			]),
+			EmailList,
 		]);
 	}
 };
