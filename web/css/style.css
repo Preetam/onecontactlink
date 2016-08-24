@@ -55,6 +55,22 @@ body {
   color: black;
 }
 
+#sidenav {
+	border-right: 1px solid #f0f0f0;
+	height: 100%;
+}
+
+#sidenav ul {
+	list-style: none;
+}
+
+#sidenav ul a {
+	color: black;
+	text-decoration: none;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
 .message-bubble {
   border-radius: 4px;
   padding: 0.8em;

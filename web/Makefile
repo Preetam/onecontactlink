@@ -1,4 +1,5 @@
-JS_SRC := js/app.js
+JS_SRC := js/app.js \
+          js/emails.js
 
 CSS_SRC := css/skeleton.css \
            css/style.css

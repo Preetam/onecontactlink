@@ -20,6 +20,7 @@ const (
 
 const (
 	EmailStatusDefault = iota
+	EmailStatusPendingActivation
 	EmailStatusActive
 )
 

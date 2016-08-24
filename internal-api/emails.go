@@ -274,4 +274,19 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 			Warnf("[Req %s] %v", requestData.RequestID, err)
 		return
 	}
+
+	// Set status to EmailStatusPendingActivation.
+	_, err = requestData.DB.Exec("UPDATE emails SET status = ?, updated = UNIX_TIMESTAMP()"+
+		" WHERE emails.address = ? AND deleted = 0",
+		schema.EmailStatusPendingActivation, *address)
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		requestData.ResponseError = err.Error()
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
 }
