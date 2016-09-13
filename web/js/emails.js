@@ -34,7 +34,6 @@ var EmailWidget = {
 	},
 	view: function(ctrl) {
 		return m("div", [
-			m("h3", "Emails"),
 			m.component(EmailList, {emails: ctrl.emails, activate: ctrl.activate}),
 		]);
 	},
@@ -48,6 +47,7 @@ var EmailListComponent = function(email, activate) {
 
 	this.view = function(ctrl) {
 		var status = ctrl.email.status();
+		var mainEmail = user().mainEmail === ctrl.email.address();
 		switch (status) {
 		case 2:
 			status = "Active";
@@ -56,25 +56,34 @@ var EmailListComponent = function(email, activate) {
 			status = "Pending Activation";
 			break;
 		case 0:
-			status = m("button", {onclick: ctrl.activate.bind(this, ctrl.email)}, "Activate");
+			status = m("button", {
+				class: "btn btn-sm btn-primary",
+				onclick: ctrl.activate.bind(this, ctrl.email)
+			}, "Activate");
 			break;
 		}
 
 		return m("tr", [
 			m("td",
-				m("span", {style: {fontSize: "1.3em"}}, ctrl.email.address())
+				m("span", ctrl.email.address())
 			),
 			m("td", status),
+			m("td", [
+				mainEmail ? "" : (m("button", {class: "btn btn-sm btn-primary"}, "Make primary")),
+				' ',
+				m("button", {class: "btn btn-sm btn-danger", disabled: true}, "Remove"),
+			])
 		])
 	}
 }
 
 var EmailList = {
 	view: function(ctrl, args) {
-		return m("table", {style: {width: "100%"}}, [
+		return m("table.table", [
 			m("tr", [
 				m("th", "Address"),
 				m("th", "Status"),
+				m("th", "Manage"),
 			]),
 			args.emails().map(function(email) {
 				return new EmailListComponent(email, args.activate);

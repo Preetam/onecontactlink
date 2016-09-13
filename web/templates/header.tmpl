@@ -2,37 +2,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-  <!-- Basic Page Needs
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <meta charset="utf-8">
   <title>OneContact.Link</title>
   <link rel="icon" type="image/png" href="/img/icon.png" />
 
-  <!-- Mobile Specific Metas
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- FONT
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,700' rel='stylesheet' type='text/css'>
-
-  <!-- CSS
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link rel="stylesheet" href="/css/normalize.css">
+  <!-- Bootstrap! -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css" integrity="sha384-2hfp1SzUoho7/TsGGGDaFdsuuDL0LX2hnUp6VkX3CUQ2K4K+xjboZdsXyp4oUHZj" crossorigin="anonymous">
   <link rel="stylesheet" href="/css/style.min.css">
 </head>
 <body>
 
-  <!-- Primary Page Layout
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <!-- Primary Page Layout -->
   <div class="container">
 
   {{- template "nav" . -}}
 
   {{- if .Info -}}
     <div class="row">
-      <div class="twelve columns">
+      <div class="col-xs-12">
         <div class='message-bubble info noselect'>
           <span>Info: </span>{{- .Info -}}
         </div>
@@ -42,7 +31,7 @@
 
   {{- if .Success -}}
     <div class="row">
-      <div class="twelve columns">
+      <div class="col-xs-12">
         <div class='message-bubble success noselect'>
           <span>Success: </span>{{- .Success -}}
         </div>
@@ -52,7 +41,7 @@
 
   {{- if .Warning -}}
     <div class="row">
-      <div class="twelve columns">
+      <div class="col-xs-12">
         <div class='message-bubble warning noselect'>
           <span>Warning: </span>{{- .Warning -}}
         </div>
@@ -62,7 +51,7 @@
 
   {{- if .Error -}}
     <div class="row">
-      <div class="twelve columns">
+      <div class="col-xs-12">
         <div class='message-bubble error noselect'>
           <span>Error: </span>{{- .Error -}}
         </div>

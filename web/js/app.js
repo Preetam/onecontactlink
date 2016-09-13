@@ -31,9 +31,9 @@ var PageWrapper = function(page) {
 	this.controller = function() {};
 	this.view = function() {
 		return m("div[class='row']",
-			m("div[class='twelve columns']", [
-				m("div#sidenav[class='three columns']", SideNav),
-				m("div[class='nine columns']", page),
+			m("div[class='col-xs-12']", [
+				m("div#sidenav[class='col-xs-6 col-sm-3 sidebar-offcanvas']", SideNav),
+				m("div[class='col-md-9']", page),
 			]));
 	}
 }
@@ -68,26 +68,33 @@ var EmailsPage = {
 var TopNav = {
 	view: function() {
 		return [
-			m("li[class='navbar-item']",
-				m("a[href='/']", "Home"),
-				m("a[href='/']", {config: m.route}, "Manage"),
-				m("a[href='/app/logout']", "Logout")
-			)
+			m("li[class='nav-item']", m("a.nav-link[href='/']", "Home")),
+			m("li[class='nav-item']", m("a.nav-link[href='/']", {config: m.route}, "Manage")),
+			m("li[class='nav-item']", m("a.nav-link[href='/app/logout']", "Logout")),
 		];
 	}
 };
 
 var SideNav = {
 	view: function() {
-		return m("ul", [
-			m("li", m("a[href='/']", {config: m.route}, "Home")),
-			m("li", m("a[href='/emails']", {config: m.route}, "Emails")),
+		return m("div", [
+			btn("Home", "/"),
+			btn("Emails", "/emails")
 		]);
+		function btn(name, route) {
+			var isCurrent = (m.route() === route);
+			var click = function(){ m.route(route); };
+			return m("a", {
+				href: route,
+				class: "list-group-item" + (isCurrent ? " active" : ""),
+				config: m.route
+			}, name);
+		}
 	}
 }
 
 m.route.mode = "hash";
-m.mount(document.querySelector("#nav"), TopNav);
+m.mount(document.querySelector("#topnav"), TopNav);
 m.route(document.querySelector("#app"), "/", {
 	"/": new PageWrapper(HomePage),
 	"/emails": new PageWrapper(EmailsPage),
