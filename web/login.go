@@ -15,7 +15,7 @@ func servePostLogin(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 		// nothing to do
 	case captchaResultFail:
 		requestData.StatusCode = http.StatusBadRequest
-		templ.ExecuteTemplate(w, "in", map[string]string{
+		templ.ExecuteTemplate(w, "invalid", map[string]string{
 			"Error": "Invalid CAPTCHA.",
 		})
 		return
