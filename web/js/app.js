@@ -30,11 +30,11 @@ var contactLink = req({
 var PageWrapper = function(page) {
 	this.controller = function() {};
 	this.view = function() {
-		return m("div[class='row']",
-			m("div[class='col-xs-12']", [
-				m("div#sidenav[class='col-xs-6 col-sm-3 sidebar-offcanvas']", SideNav),
-				m("div[class='col-md-9']", page),
-			]));
+		return m("div[class='row']", [
+				m("div#sidenav[class='col-sm-3 sidebar-offcanvas']", SideNav),
+				"",
+				m("div[class='col-sm-9']", page),
+			]);
 	}
 }
 

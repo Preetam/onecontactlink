@@ -33,7 +33,7 @@ var EmailWidget = {
 		}.bind(this);
 	},
 	view: function(ctrl) {
-		return m("div", [
+		return m("div.table-responsive", [
 			m.component(EmailList, {emails: ctrl.emails, activate: ctrl.activate}),
 		]);
 	},
