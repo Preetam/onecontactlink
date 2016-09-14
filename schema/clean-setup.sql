@@ -25,7 +25,7 @@ CREATE TABLE `emails` (
   `updated` int(10) unsigned NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `address` (`address`)
+  UNIQUE KEY `address_deleted` (`address`, `deleted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

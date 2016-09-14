@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"net/http"
 
 	internalClient "github.com/Preetam/onecontactlink/internal-api/client"
 	"github.com/Preetam/onecontactlink/middleware"
+	"github.com/Preetam/onecontactlink/schema"
 	"github.com/Preetam/onecontactlink/web/linktoken"
 	log "github.com/Sirupsen/logrus"
 	"github.com/VividCortex/siesta"
@@ -109,6 +111,42 @@ func main() {
 			requestData.ResponseData = emails
 		})
 
+	service.Route("POST", "/emails", "create an email",
+		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+			userID, ok := c.Get("user").(int)
+			if !ok {
+				requestData.StatusCode = http.StatusBadRequest
+				return
+			}
+
+			var email schema.Email
+			err := json.NewDecoder(r.Body).Decode(&email)
+			if err != nil {
+				requestData.StatusCode = http.StatusBadRequest
+				requestData.ResponseError = err.Error()
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				return
+			}
+
+			createdEmail, err := internalAPIClient.CreateEmail(userID, email.Address)
+			if err != nil {
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				requestData.StatusCode = http.StatusInternalServerError
+				return
+			}
+
+			requestData.ResponseData = createdEmail
+		})
+
 	service.Route("POST", "/emails/:address/send_activation", "send activation email",
 		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
 			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
@@ -127,6 +165,35 @@ func main() {
 			}
 
 			err = internalAPIClient.SendEmailActivationEmail(*address)
+			if err != nil {
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				requestData.StatusCode = http.StatusInternalServerError
+				return
+			}
+		})
+
+	service.Route("DELETE", "/emails/:address", "delete email address",
+		func(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+			requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+
+			var params siesta.Params
+			address := params.String("address", "", "Email address")
+			err := params.Parse(r.Form)
+			if err != nil {
+				log.WithFields(log.Fields{"request_id": requestData.RequestID,
+					"method": r.Method,
+					"url":    r.URL,
+					"error":  err.Error()}).
+					Warnf("[Req %s] %v", requestData.RequestID, err)
+				requestData.StatusCode = http.StatusBadRequest
+				return
+			}
+
+			err = internalAPIClient.DeleteEmail(*address)
 			if err != nil {
 				log.WithFields(log.Fields{"request_id": requestData.RequestID,
 					"method": r.Method,

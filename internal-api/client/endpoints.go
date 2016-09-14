@@ -170,6 +170,19 @@ func (c *Client) CreateEmail(user int, address string) (*schema.Email, error) {
 	return &email, nil
 }
 
+func (c *Client) DeleteEmail(address string) error {
+	err := c.doRequest("DELETE", fmt.Sprintf("/emails/%s", address), nil, nil)
+	if err != nil {
+		if serverErr, ok := err.(ServerError); ok {
+			if serverErr == http.StatusNotFound {
+				return ErrNotFound
+			}
+		}
+		return err
+	}
+	return nil
+}
+
 func (c *Client) SendEmailActivationEmail(address string) error {
 	return c.doRequest("POST", fmt.Sprintf("/emails/%s/send_activation", address), nil, nil)
 }

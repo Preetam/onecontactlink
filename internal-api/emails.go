@@ -290,3 +290,48 @@ func sendEmailActivationEmail(c siesta.Context, w http.ResponseWriter, r *http.R
 		return
 	}
 }
+
+func deleteEmail(c siesta.Context, w http.ResponseWriter, r *http.Request) {
+	requestData := c.Get(middleware.RequestDataKey).(*middleware.RequestData)
+	var params siesta.Params
+	address := params.String("address", "", "Email address")
+	err := params.Parse(r.Form)
+	if err != nil {
+		requestData.StatusCode = http.StatusBadRequest
+		requestData.ResponseError = err.Error()
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	updateResult, err := requestData.DB.Exec("UPDATE emails SET deleted = UNIX_TIMESTAMP()"+
+		" WHERE address = ? AND deleted = 0",
+		*address)
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	affected, err := updateResult.RowsAffected()
+	if err != nil {
+		requestData.StatusCode = http.StatusInternalServerError
+		log.WithFields(log.Fields{"request_id": requestData.RequestID,
+			"method": r.Method,
+			"url":    r.URL,
+			"error":  err.Error()}).
+			Warnf("[Req %s] %v", requestData.RequestID, err)
+		return
+	}
+
+	if affected == 0 {
+		requestData.StatusCode = http.StatusNotFound
+	}
+}
